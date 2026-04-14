@@ -24,7 +24,7 @@ export default function Navbar() {
       <div className="navbar-container">
         <Link to="/" className="navbar-logo" onClick={closeMenu}>
           <span className="logo-icon">🎬</span>
-          FilmuVerclė
+          Filmu Rekomendacijos +
         </Link>
 
         <button
