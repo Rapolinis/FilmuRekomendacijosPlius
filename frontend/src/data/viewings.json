@@ -1,0 +1,35 @@
+[
+  {
+    "id": 1,
+    "movieId": 1,
+    "movieTitle": "Tarp Žvaigždžių",
+    "date": "2026-04-20",
+    "time": "19:00",
+    "maxParticipants": 50,
+    "participants": [3, 4],
+    "createdBy": 2,
+    "description": "Bendra Interstellar peržiūra su diskusija po filmo!"
+  },
+  {
+    "id": 2,
+    "movieId": 3,
+    "movieTitle": "Tamsos Riteris",
+    "date": "2026-04-25",
+    "time": "20:00",
+    "maxParticipants": 50,
+    "participants": [3],
+    "createdBy": 2,
+    "description": "Nolan maratonas - pradedame nuo Dark Knight!"
+  },
+  {
+    "id": 3,
+    "movieId": 6,
+    "movieTitle": "Pradžia",
+    "date": "2026-05-01",
+    "time": "18:30",
+    "maxParticipants": 50,
+    "participants": [],
+    "createdBy": 2,
+    "description": "Inception bendra peržiūra - ar jūs vis dar sapne?"
+  }
+]

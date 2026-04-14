@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "username": "admin",
+    "email": "admin@filmuvercle.lt",
+    "password": "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918",
+    "role": "admin",
+    "avatar": "",
+    "blocked": false,
+    "blockedReason": "",
+    "blockedUntil": null,
+    "createdAt": "2026-01-01"
+  },
+  {
+    "id": 2,
+    "username": "moderatorius",
+    "email": "mod@filmuvercle.lt",
+    "password": "cfde2ca5188afb7bdd0691c7bef887baba78b709aadde8e8c535329d5751e6fe",
+    "role": "moderator",
+    "avatar": "",
+    "blocked": false,
+    "blockedReason": "",
+    "blockedUntil": null,
+    "createdAt": "2026-01-01"
+  },
+  {
+    "id": 3,
+    "username": "ziuretojas",
+    "email": "ziuretojas@filmuvercle.lt",
+    "password": "ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f",
+    "role": "viewer",
+    "avatar": "",
+    "blocked": false,
+    "blockedReason": "",
+    "blockedUntil": null,
+    "createdAt": "2026-02-15"
+  },
+  {
+    "id": 4,
+    "username": "titas",
+    "email": "titas@filmuvercle.lt",
+    "password": "ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f",
+    "role": "viewer",
+    "avatar": "",
+    "blocked": false,
+    "blockedReason": "",
+    "blockedUntil": null,
+    "createdAt": "2026-03-01"
+  }
+]

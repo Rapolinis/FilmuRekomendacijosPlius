@@ -1,0 +1,14 @@
+[
+  {"id": 1, "name": "Drama"},
+  {"id": 2, "name": "Veiksmo"},
+  {"id": 3, "name": "Komedija"},
+  {"id": 4, "name": "Trileris"},
+  {"id": 5, "name": "Mokslinė fantastika"},
+  {"id": 6, "name": "Kriminalinis"},
+  {"id": 7, "name": "Romantinis"},
+  {"id": 8, "name": "Siaubo"},
+  {"id": 9, "name": "Nuotykių"},
+  {"id": 10, "name": "Animacinis"},
+  {"id": 11, "name": "Dokumentinis"},
+  {"id": 12, "name": "Fantastinis"}
+]

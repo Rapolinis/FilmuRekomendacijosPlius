@@ -1,0 +1,147 @@
+.profile-page {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.profile-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.profile-info {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.profile-avatar {
+  font-size: 3rem;
+  width: 70px;
+  height: 70px;
+  background: #ebf8ff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-info h2 {
+  color: #1a365d;
+  margin-bottom: 0.2rem;
+}
+
+.profile-email {
+  color: #718096;
+  font-size: 0.9rem;
+}
+
+.profile-role {
+  display: inline-block;
+  background: #ebf8ff;
+  color: #2b6cb0;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 0.3rem;
+}
+
+.profile-section {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.profile-section h3 {
+  color: #4a5568;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.8rem;
+}
+
+.edit-row {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.edit-row input {
+  flex: 1;
+  padding: 0.6rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  min-width: 200px;
+}
+
+.edit-row input:focus {
+  outline: none;
+  border-color: #3182ce;
+}
+
+.edit-row span {
+  color: #4a5568;
+  font-size: 1rem;
+}
+
+.edit-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.edit-column input {
+  padding: 0.6rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.edit-column input:focus {
+  outline: none;
+  border-color: #3182ce;
+}
+
+.btn-edit {
+  padding: 0.4rem 0.8rem;
+  border: 2px solid #3182ce;
+  border-radius: 6px;
+  background: #fff;
+  color: #3182ce;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+}
+
+.btn-edit:hover {
+  background: #ebf8ff;
+}
+
+.profile-danger {
+  margin-top: 1rem;
+}
+
+.btn-delete-account {
+  background: #fff5f5;
+  border: 2px solid #fc8181;
+  color: #e53e3e;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-delete-account:hover {
+  background: #e53e3e;
+  color: #fff;
+}

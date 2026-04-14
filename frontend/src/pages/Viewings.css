@@ -1,0 +1,139 @@
+.viewings-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.viewings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.viewing-card {
+  display: flex;
+  gap: 1.5rem;
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s;
+}
+
+.viewing-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.viewing-poster {
+  flex-shrink: 0;
+  width: 120px;
+}
+
+.viewing-poster img {
+  width: 100%;
+  border-radius: 8px;
+}
+
+.viewing-info h2 {
+  color: #1a365d;
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.viewing-description {
+  color: #4a5568;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.viewing-meta {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.viewing-meta span {
+  color: #718096;
+  font-size: 0.9rem;
+}
+
+.spots-warning {
+  color: #e53e3e !important;
+  font-weight: 600;
+}
+
+.viewing-actions {
+  margin-top: 0.5rem;
+}
+
+.cutoff-timer {
+  display: inline-block;
+  padding: 0.3rem 0.8rem;
+  background: #ebf8ff;
+  color: #2b6cb0;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 0.8rem;
+}
+
+.cutoff-timer.urgent {
+  background: #fff5f5;
+  color: #e53e3e;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.registration-closed {
+  color: #a0aec0;
+  font-style: italic;
+}
+
+.no-viewings {
+  text-align: center;
+  color: #a0aec0;
+  padding: 3rem;
+  font-size: 1.1rem;
+}
+
+.past-viewings {
+  margin-top: 2.5rem;
+}
+
+.past-viewings h2 {
+  color: #a0aec0;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.viewing-card.past {
+  opacity: 0.6;
+  border-left: 3px solid #a0aec0;
+}
+
+.past-badge {
+  display: inline-block;
+  background: #e2e8f0;
+  color: #718096;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 640px) {
+  .viewing-card {
+    flex-direction: column;
+  }
+
+  .viewing-poster {
+    width: 100%;
+    max-width: 200px;
+  }
+}
