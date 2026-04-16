@@ -9,33 +9,33 @@
   --on-surface-variant: #40484b;
   --on-surface: #101e1b;
   --on-primary-container: #a2dff3;
-  --surface-container-highest: #d5e6e0;
+  --surface-container-highest: #c0d6d0;
   --inverse-surface: #24332f;
-  --surface-variant: #d5e6e0;
-  --primary: #004c5c;
-  --surface: #ecfdf7;
+  --surface-variant: #c0d6d0;
+  --primary: #236476;
+  --surface: #CFE0DA;
   --on-tertiary: #ffffff;
   --outline-variant: #bfc8cc;
   --inverse-primary: #93cfe4;
-  --tertiary-container: #4c6431;
-  --surface-container-low: #e6f7f1;
+  --tertiary-container: #4A6C2F;
+  --surface-container-low: #d8eae4;
   --primary-container: #236476;
   --on-secondary-container: #065782;
   --on-tertiary-container: #c3e0a0;
-  --surface-container: #e1f2ec;
-  --surface-dim: #cdded8;
+  --surface-container: #cfe3dd;
+  --surface-dim: #b5cbc4;
   --error-container: #ffdad6;
-  --secondary: #1e638f;
-  --tertiary: #354c1b;
+  --secondary: #3A79A6;
+  --tertiary: #4A6C2F;
   --surface-container-lowest: #ffffff;
   --primary-fixed: #b3ebff;
   --on-secondary: #ffffff;
   --primary-fixed-dim: #93cfe4;
-  --background: #ecfdf7;
-  --surface-bright: #ecfdf7;
+  --background: #CFE0DA;
+  --surface-bright: #CFE0DA;
   --on-primary-fixed: #001f27;
-  --surface-container-high: #dbece6;
-  --surface-tint: #256678;
+  --surface-container-high: #c5d8d2;
+  --surface-tint: #3A79A6;
   --secondary-container: #91cdfe;
   --inverse-on-surface: #e3f5ee;
 }
@@ -46,11 +46,9 @@
   padding: 0;
 }
 
-body {
+/* Scoped to auth pages only — do NOT set body overflow here */
+.auth-page {
   font-family: 'Manrope', sans-serif;
-  background: var(--background);
-  color: var(--on-background);
-  overflow: hidden;
 }
 
 /* ── Auth Page Layout ── */
@@ -278,12 +276,12 @@ body {
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
   margin-top: 0.5rem;
-  box-shadow: 0 4px 24px rgba(0, 76, 92, 0.25);
+  box-shadow: 0 4px 24px rgba(35, 100, 118, 0.25);
 }
 
 .btn-primary:hover {
   transform: translateY(-1px) scale(1.01);
-  box-shadow: 0 8px 32px rgba(0, 76, 92, 0.35);
+  box-shadow: 0 8px 32px rgba(35, 100, 118, 0.35);
 }
 
 .btn-primary:active {
@@ -291,7 +289,7 @@ body {
 }
 
 .btn-confirm {
-  background: linear-gradient(to right, #48bb78, #38a169) !important;
+  background: linear-gradient(to right, #7DAD3F, #4A6C2F) !important;
 }
 
 .btn-cancel {
@@ -314,8 +312,8 @@ body {
 
 .success-message {
   background: #f0fff4;
-  border: 1px solid #68d391;
-  color: #276749;
+  border: 1px solid #7DAD3F;
+  color: #4A6C2F;
   padding: 0.8rem 1rem;
   border-radius: 0.75rem;
   margin-bottom: 1rem;
@@ -392,7 +390,7 @@ body {
   right: -5%;
   width: 25rem;
   height: 25rem;
-  background: rgba(30, 99, 143, 0.05);
+  background: rgba(58, 121, 166, 0.05);
   border-radius: 9999px;
   filter: blur(120px);
   pointer-events: none;
@@ -406,7 +404,7 @@ body {
   left: 35%;
   width: 18rem;
   height: 18rem;
-  background: rgba(53, 76, 27, 0.05);
+  background: rgba(74, 108, 47, 0.05);
   border-radius: 9999px;
   filter: blur(100px);
   pointer-events: none;

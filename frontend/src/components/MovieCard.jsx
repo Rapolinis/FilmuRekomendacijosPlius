@@ -11,7 +11,7 @@ const MovieCard = memo(function MovieCard({ movie }) {
           src={movie.poster}
           alt={`${movie.title} plakatas`}
           onError={(e) => {
-            e.target.src = `https://placehold.co/300x450/1a365d/ffffff?text=${encodeURIComponent(movie.title)}`;
+            e.target.src = `https://placehold.co/300x450/236476/ffffff?text=${encodeURIComponent(movie.title)}`;
           }}
         />
         <div className="movie-overlay">
@@ -20,7 +20,7 @@ const MovieCard = memo(function MovieCard({ movie }) {
       </div>
       <div className="movie-info">
         <h3>{movie.title}</h3>
-        <p className="movie-genre">{movie.genre.join(', ')}</p>
+        <p className="movie-genre">{Array.isArray(movie.genre) ? movie.genre.join(', ') : movie.genre}</p>
         <div className="movie-meta">
           <StarRating currentRating={movie.rating} readonly />
           <span className="imdb-badge">IMDb {movie.imdbRating}</span>

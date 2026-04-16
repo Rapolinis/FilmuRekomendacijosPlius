@@ -28,12 +28,12 @@ export default function Movies() {
       result = result.filter(m =>
         m.title.toLowerCase().includes(term) ||
         m.originalTitle.toLowerCase().includes(term) ||
-        m.actors.some(a => a.toLowerCase().includes(term)) ||
+        (m.actors || []).some(a => a.toLowerCase().includes(term)) ||
         m.director.toLowerCase().includes(term)
       );
     }
 
-    if (selectedGenre) result = result.filter(m => m.genre.includes(selectedGenre));
+    if (selectedGenre) result = result.filter(m => (m.genre || []).includes(selectedGenre));
     if (selectedDirector) result = result.filter(m => m.director === selectedDirector);
     if (dateFrom) result = result.filter(m => m.releaseDate >= dateFrom);
     if (dateTo) result = result.filter(m => m.releaseDate <= dateTo);

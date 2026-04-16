@@ -35,7 +35,7 @@
 }
 
 .viewing-info h2 {
-  color: #1a365d;
+  color: #236476;
   font-size: 1.3rem;
   margin-bottom: 0.5rem;
 }
@@ -70,8 +70,8 @@
 .cutoff-timer {
   display: inline-block;
   padding: 0.3rem 0.8rem;
-  background: #ebf8ff;
-  color: #2b6cb0;
+  background: #CFE0DA;
+  color: #236476;
   border-radius: 6px;
   font-size: 0.85rem;
   font-weight: 500;

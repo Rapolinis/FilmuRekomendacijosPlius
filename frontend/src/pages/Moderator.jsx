@@ -42,7 +42,7 @@ export default function Moderator() {
     showMsg('Bendra peržiūra sukurta!');
   };
 
-  const moviesWithComments = movies.filter(m => m.comments.length > 0);
+  const moviesWithComments = movies.filter(m => (m.comments || []).length > 0);
 
   return (
     <div className="admin-page">
@@ -144,7 +144,7 @@ export default function Moderator() {
             moviesWithComments.map(movie => (
               <div key={movie.id} className="comment-movie-group">
                 <h3>{movie.title}</h3>
-                {movie.comments.map((comment, idx) => (
+                {(movie.comments || []).map((comment, idx) => (
                   <div key={idx} className="comment-row">
                     <div className="comment-row-info">
                       <span className="comment-user">{users.find(u => u.id === comment.userId)?.username || '[Ištrintas vartotojas]'}</span>

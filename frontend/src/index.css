@@ -1,14 +1,14 @@
 /* FilmuVerclė Global Styles */
 :root {
-  --primary: #3182ce;
-  --primary-dark: #2b6cb0;
-  --primary-light: #ebf8ff;
+  --primary: #3A79A6;
+  --primary-dark: #236476;
+  --primary-light: #CFE0DA;
   --text: #2d3748;
   --text-light: #718096;
-  --bg: #f0f4f8;
+  --bg: #CFE0DA;
   --white: #ffffff;
   --border: #e2e8f0;
-  --success: #48bb78;
+  --success: #7DAD3F;
   --danger: #e53e3e;
   --warning: #ecc94b;
 }
@@ -39,7 +39,7 @@ a {
 }
 
 a:hover {
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 button {

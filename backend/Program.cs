@@ -1,4 +1,8 @@
+using MySqlConnector;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers();
 
 builder.Services.AddCors(options =>
 {
@@ -9,20 +13,13 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod());
 });
 
+// Register MySQL connection (transient so each request gets a fresh connection)
+builder.Services.AddTransient<MySqlConnection>(_ =>
+    new MySqlConnection(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 var app = builder.Build();
 
 app.UseCors("AllowAll");
-
-app.MapGet("/api/movies", () =>
-{
-    var movies = new[]
-    {
-        new { id = 1, title = "Inception", genre = "Sci-Fi" },
-        new { id = 2, title = "Interstellar", genre = "Sci-Fi" },
-        new { id = 3, title = "Batman", genre = "Action" }
-    };
-
-    return Results.Ok(movies);
-});
+app.MapControllers();
 
 app.Run();

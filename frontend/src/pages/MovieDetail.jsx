@@ -108,7 +108,7 @@ export default function MovieDetail() {
           <p className="original-title">{movie.originalTitle} ({new Date(movie.releaseDate).getFullYear()})</p>
 
           <div className="detail-tags">
-            {movie.genre.map(g => (
+            {(movie.genre || []).map(g => (
               <span key={g} className="tag">{g}</span>
             ))}
             <span className="tag tag-category">{movie.category}</span>
@@ -117,7 +117,7 @@ export default function MovieDetail() {
           <div className="detail-ratings">
             <div className="rating-block">
               <StarRating currentRating={movie.rating} readonly />
-              <span>({movie.ratings.length} įvertinimai)</span>
+              <span>({(movie.ratings || []).length} įvertinimai)</span>
             </div>
             <div className="imdb-rating">
               <span className="imdb-badge-lg">IMDb {movie.imdbRating}</span>
@@ -126,7 +126,7 @@ export default function MovieDetail() {
 
           <div className="detail-meta">
             <p><strong>Režisierius:</strong> {movie.director}</p>
-            <p><strong>Aktoriai:</strong> {movie.actors.join(', ')}</p>
+            <p><strong>Aktoriai:</strong> {(movie.actors || []).join(', ')}</p>
             <p><strong>Trukmė:</strong> {movie.duration} min</p>
             <p><strong>Išleidimo data:</strong> {formatDate(movie.releaseDate)}</p>
           </div>
@@ -165,7 +165,7 @@ export default function MovieDetail() {
       </div>
 
       <div className="comments-section">
-        <h2>Komentarai ({movie.comments.length})</h2>
+        <h2>Komentarai ({(movie.comments || []).length})</h2>
 
         {canInteract && (
           <form onSubmit={handleComment} className="comment-form">
@@ -186,10 +186,10 @@ export default function MovieDetail() {
         )}
 
         <div className="comments-list">
-          {movie.comments.length === 0 ? (
+          {(movie.comments || []).length === 0 ? (
             <p className="no-comments">Komentarų dar nėra. Būkite pirmas!</p>
           ) : (
-            movie.comments.map((comment, index) => {
+            (movie.comments || []).map((comment, index) => {
               const isOwnComment = user && comment.userId === user.id;
               const canModerate = user && (user.role === 'moderator' || user.role === 'admin');
 

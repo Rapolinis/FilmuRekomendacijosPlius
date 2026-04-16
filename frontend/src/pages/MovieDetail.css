@@ -36,7 +36,7 @@
 
 .movie-detail-info h1 {
   font-size: 2rem;
-  color: #1a365d;
+  color: #236476;
   margin-bottom: 0.3rem;
 }
 
@@ -54,8 +54,8 @@
 }
 
 .tag {
-  background: #ebf8ff;
-  color: #2b6cb0;
+  background: #CFE0DA;
+  color: #236476;
   padding: 0.3rem 0.8rem;
   border-radius: 20px;
   font-size: 0.85rem;
@@ -130,21 +130,21 @@
 
 .btn-watchlist {
   padding: 0.6rem 1.2rem;
-  border: 2px solid #3182ce;
+  border: 2px solid #3A79A6;
   border-radius: 8px;
   background: #fff;
-  color: #3182ce;
+  color: #3A79A6;
   cursor: pointer;
   font-weight: 600;
   transition: all 0.2s;
 }
 
 .btn-watchlist:hover {
-  background: #ebf8ff;
+  background: #CFE0DA;
 }
 
 .btn-watchlist.in-list {
-  background: #3182ce;
+  background: #3A79A6;
   color: #fff;
 }
 
@@ -185,7 +185,7 @@
 }
 
 .comments-section h2 {
-  color: #1a365d;
+  color: #236476;
   margin-bottom: 1.5rem;
 }
 
@@ -201,7 +201,7 @@
 
 .comment-form textarea:focus {
   outline: none;
-  border-color: #3182ce;
+  border-color: #3A79A6;
 }
 
 .comment-form-footer {
@@ -238,7 +238,7 @@
 
 .comment-user {
   font-weight: 600;
-  color: #2b6cb0;
+  color: #236476;
 }
 
 .comment-date {
@@ -247,7 +247,7 @@
 }
 
 .already-rated {
-  color: #48bb78;
+  color: #7DAD3F;
   font-weight: 500;
   font-size: 0.9rem;
 }
@@ -268,7 +268,7 @@
 }
 
 .btn-edit-comment:hover {
-  background: #ebf8ff;
+  background: #CFE0DA;
 }
 
 .btn-delete-comment {
@@ -294,7 +294,7 @@
 .comment-edit-form textarea {
   width: 100%;
   padding: 0.6rem;
-  border: 2px solid #3182ce;
+  border: 2px solid #3A79A6;
   border-radius: 6px;
   font-size: 0.9rem;
   resize: vertical;

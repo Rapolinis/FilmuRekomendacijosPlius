@@ -9,6 +9,8 @@ import { loadFromStorage, saveToStorage } from '../utils/storage';
 
 const DataContext = createContext(null);
 
+const API_BASE = 'http://localhost:5075';
+
 function usePersistedState(key, fallback) {
   const [state, setState] = useState(() => loadFromStorage(key, fallback));
 
@@ -20,7 +22,27 @@ function usePersistedState(key, fallback) {
 }
 
 export function DataProvider({ children }) {
-  const [movies, setMovies] = usePersistedState('movies', initialMovies);
+  // Movies are fetched from the MySQL backend
+  const [movies, setMovies] = useState([]);
+  const [moviesLoading, setMoviesLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/api/movies`)
+      .then(res => {
+        if (!res.ok) throw new Error('API unavailable');
+        return res.json();
+      })
+      .then(data => {
+        setMovies(data);
+        setMoviesLoading(false);
+      })
+      .catch(() => {
+        // Fallback to local JSON if backend is not running
+        setMovies(loadFromStorage('movies', initialMovies));
+        setMoviesLoading(false);
+      });
+  }, []);
+
   const [users, setUsers] = usePersistedState('users', initialUsers);
   const [genres, setGenres] = usePersistedState('genres', initialGenres);
   const [categories, setCategories] = usePersistedState('categories', initialCategories);
@@ -51,7 +73,7 @@ export function DataProvider({ children }) {
   const addComment = useCallback((movieId, comment) => {
     setMovies(prev => prev.map(m =>
       m.id === movieId
-        ? { ...m, comments: [...m.comments, comment] }
+        ? { ...m, comments: [...(m.comments || []), comment] }
         : m
     ));
   }, [setMovies]);
@@ -61,7 +83,7 @@ export function DataProvider({ children }) {
       m.id === movieId
         ? {
           ...m,
-          comments: m.comments.map((c, i) =>
+          comments: (m.comments || []).map((c, i) =>
             i === commentIndex ? { ...c, text: newText, edited: true } : c
           )
         }
@@ -72,7 +94,7 @@ export function DataProvider({ children }) {
   const deleteComment = useCallback((movieId, commentIndex) => {
     setMovies(prev => prev.map(m =>
       m.id === movieId
-        ? { ...m, comments: m.comments.filter((_, i) => i !== commentIndex) }
+        ? { ...m, comments: (m.comments || []).filter((_, i) => i !== commentIndex) }
         : m
     ));
   }, [setMovies]);
@@ -87,7 +109,7 @@ export function DataProvider({ children }) {
     setMovies(prev => prev.map(m => {
       if (m.id !== movieId) return m;
       // Double-check not already counted (belt and suspenders)
-      const newRatings = [...m.ratings, rating];
+      const newRatings = [...(m.ratings || []), rating];
       return {
         ...m,
         ratings: newRatings,
@@ -221,7 +243,8 @@ export function DataProvider({ children }) {
 
   return (
     <DataContext.Provider value={{
-      movies, addMovie, updateMovie, deleteMovie, addComment, editComment, deleteComment, rateMovie, hasUserRated,
+      movies, moviesLoading,
+      addMovie, updateMovie, deleteMovie, addComment, editComment, deleteComment, rateMovie, hasUserRated,
       users, addUser, updateUser, blockUser, unblockUser, deleteUser, changeUserRole,
       genres, addGenre, updateGenre, deleteGenre,
       categories, addCategory, updateCategory, deleteCategory,

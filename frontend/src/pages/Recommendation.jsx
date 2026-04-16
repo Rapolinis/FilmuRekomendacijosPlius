@@ -45,7 +45,7 @@ export default function Recommendation() {
     if (!selectedMood) return [];
 
     let filtered = movies.filter(m =>
-      m.genre.some(g => selectedMood.genres.includes(g))
+      (m.genre || []).some(g => selectedMood.genres.includes(g))
     );
 
     // Weather influence on duration preference
@@ -56,17 +56,17 @@ export default function Recommendation() {
       } else if (selectedWeather.influence === 'long' || selectedWeather.influence === 'cozy') {
         filtered.sort((a, b) => b.duration - a.duration);
       } else if (selectedWeather.influence === 'intense') {
-        filtered = filtered.filter(m => m.genre.some(g => ['Trileris', 'Veiksmo', 'Siaubo'].includes(g))).length > 0
-          ? filtered.filter(m => m.genre.some(g => ['Trileris', 'Veiksmo', 'Siaubo'].includes(g)))
+        filtered = filtered.filter(m => (m.genre || []).some(g => ['Trileris', 'Veiksmo', 'Siaubo'].includes(g))).length > 0
+          ? filtered.filter(m => (m.genre || []).some(g => ['Trileris', 'Veiksmo', 'Siaubo'].includes(g)))
           : filtered;
       }
     }
 
     // Shoe size: quirky factor — odd sizes get more obscure picks, even get popular
     if (shoeSize % 2 === 0) {
-      filtered.sort((a, b) => b.ratings.length - a.ratings.length);
+      filtered.sort((a, b) => (b.ratings || []).length - (a.ratings || []).length);
     } else {
-      filtered.sort((a, b) => a.ratings.length - b.ratings.length);
+      filtered.sort((a, b) => (a.ratings || []).length - (b.ratings || []).length);
     }
 
     // Moon phase influence

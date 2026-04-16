@@ -96,7 +96,7 @@ export default function Admin() {
       description: movie.description,
       genre: movie.genre,
       director: movie.director,
-      actors: movie.actors.join(', '),
+      actors: (movie.actors || []).join(', '),
       duration: movie.duration,
       releaseDate: movie.releaseDate,
       imdbRating: movie.imdbRating,
@@ -180,7 +180,7 @@ export default function Admin() {
                 {movies.map(movie => (
                   <tr key={movie.id}>
                     <td><strong>{movie.title}</strong></td>
-                    <td>{movie.genre.join(', ')}</td>
+                    <td>{(movie.genre || []).join(', ')}</td>
                     <td>{movie.director}</td>
                     <td>⭐ {movie.rating}</td>
                     <td className="action-btns">

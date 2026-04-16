@@ -28,7 +28,7 @@
 }
 
 .condition-card strong {
-  color: #1a365d;
+  color: #236476;
   display: block;
   margin-bottom: 0.2rem;
 }
@@ -56,13 +56,13 @@
 }
 
 .mood-btn:hover {
-  border-color: #3182ce;
-  background: #ebf8ff;
+  border-color: #3A79A6;
+  background: #CFE0DA;
 }
 
 .mood-btn.active {
-  border-color: #3182ce;
-  background: #3182ce;
+  border-color: #3A79A6;
+  background: #3A79A6;
   color: #fff;
 }
 
@@ -80,7 +80,7 @@
 }
 
 .slider-section h3 {
-  color: #1a365d;
+  color: #236476;
   margin-bottom: 1rem;
   font-size: 1.05rem;
 }
@@ -106,7 +106,7 @@
   appearance: none;
   width: 22px;
   height: 22px;
-  background: #3182ce;
+  background: #3A79A6;
   border-radius: 50%;
   cursor: pointer;
 }
@@ -114,7 +114,7 @@
 .shoe-value {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #3182ce;
+  color: #3A79A6;
   min-width: 40px;
   text-align: center;
 }
@@ -131,7 +131,7 @@
 }
 
 .rec-results h2 {
-  color: #1a365d;
+  color: #236476;
   margin-bottom: 0.5rem;
 }
 
