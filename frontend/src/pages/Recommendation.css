@@ -139,3 +139,14 @@
   color: #718096;
   margin-bottom: 1.5rem;
 }
+.moon-phases {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.active-moon {
+  border: 3px solid #facc15;
+  box-shadow: 0 0 18px rgba(250, 204, 21, 0.55);
+  transform: scale(1.03);
+}

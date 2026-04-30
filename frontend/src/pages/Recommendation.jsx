@@ -6,13 +6,44 @@ import './Recommendation.css';
 
 export default function Recommendation() {
   const { movies } = useData();
+
   const [mood, setMood] = useState('');
   const [weather, setWeather] = useState('');
   const [shoeSize, setShoeSize] = useState(42);
+  const [zodiac, setZodiac] = useState('');
+  const [pet, setPet] = useState('');
   const [extraCriteria, setExtraCriteria] = useState('');
   const [showResults, setShowResults] = useState(false);
 
   const moonPhase = useMemo(() => getMoonPhase(), []);
+
+  const normalizeMoonPhase = (name) => {
+    const map = {
+      'New Moon': 'Jaunatis',
+      'Waxing Crescent': 'Jaunėjantis pjautuvas',
+      'First Quarter': 'Priešpilnis',
+      'Waxing Gibbous': 'Pilnėjantis mėnulis',
+      'Full Moon': 'Pilnatis',
+      'Waning Gibbous': 'Delčiantis mėnulis',
+      'Last Quarter': 'Delčia',
+      'Waning Crescent': 'Senstantis pjautuvas',
+    };
+
+    return map[name] || name;
+  };
+
+  const currentMoon = normalizeMoonPhase(moonPhase.name);
+
+  const moonPhases = [
+    { name: 'Jaunatis', emoji: '🌑' },
+    { name: 'Jaunėjantis pjautuvas', emoji: '🌒' },
+    { name: 'Priešpilnis', emoji: '🌓' },
+    { name: 'Pilnėjantis mėnulis', emoji: '🌔' },
+    { name: 'Pilnatis', emoji: '🌕' },
+    { name: 'Delčiantis mėnulis', emoji: '🌖' },
+    { name: 'Delčia', emoji: '🌗' },
+    { name: 'Senstantis pjautuvas', emoji: '🌘' },
+  ];
 
   const moods = [
     { value: 'laimingas', label: 'Laimingas 😊', genres: ['Komedija', 'Nuotykių', 'Animacinis'] },
@@ -24,11 +55,35 @@ export default function Recommendation() {
   ];
 
   const weatherOptions = [
-    { value: 'sauleta', label: '☀️ Saulėta', influence: 'short', mood: 'energinga' },
-    { value: 'debesuota', label: '☁️ Debesuota', influence: 'medium', mood: 'rami' },
-    { value: 'lietinga', label: '🌧️ Lietinga', influence: 'long', mood: 'melancholiška' },
-    { value: 'snieginga', label: '❄️ Snieginga', influence: 'cozy', mood: 'jaukiai' },
-    { value: 'audra', label: '⛈️ Audra', influence: 'intense', mood: 'intensyvi' },
+    { value: 'sauleta', label: '☀️ Saulėta', influence: 'short' },
+    { value: 'debesuota', label: '☁️ Debesuota', influence: 'medium' },
+    { value: 'lietinga', label: '🌧️ Lietinga', influence: 'long' },
+    { value: 'snieginga', label: '❄️ Snieginga', influence: 'cozy' },
+    { value: 'audra', label: '⛈️ Audra', influence: 'intense' },
+  ];
+
+  const zodiacOptions = [
+    { value: 'avinas', label: 'Avinas ♈', genres: ['Veiksmo', 'Nuotykių'] },
+    { value: 'jautis', label: 'Jautis ♉', genres: ['Drama', 'Romantinis'] },
+    { value: 'dvyniai', label: 'Dvyniai ♊', genres: ['Komedija', 'Kriminalinis'] },
+    { value: 'vezys', label: 'Vėžys ♋', genres: ['Animacinis', 'Romantinis'] },
+    { value: 'liutas', label: 'Liūtas ♌', genres: ['Veiksmo', 'Komedija'] },
+    { value: 'mergele', label: 'Mergelė ♍', genres: ['Dokumentinis', 'Kriminalinis'] },
+    { value: 'svarstykles', label: 'Svarstyklės ♎', genres: ['Romantinis', 'Drama'] },
+    { value: 'skorpionas', label: 'Skorpionas ♏', genres: ['Trileris', 'Siaubo'] },
+    { value: 'saulys', label: 'Šaulys ♐', genres: ['Nuotykių', 'Mokslinė fantastika'] },
+    { value: 'oziaragis', label: 'Ožiaragis ♑', genres: ['Drama', 'Dokumentinis'] },
+    { value: 'vandenis', label: 'Vandenis ♒', genres: ['Mokslinė fantastika', 'Animacinis'] },
+    { value: 'zuvys', label: 'Žuvys ♓', genres: ['Romantinis', 'Drama'] },
+  ];
+
+  const petOptions = [
+    { value: 'suo', label: 'Šuo 🐶', genres: ['Nuotykių', 'Komedija'] },
+    { value: 'kate', label: 'Katė 🐱', genres: ['Drama', 'Trileris'] },
+    { value: 'ziurkenas', label: 'Žiurkėnas 🐹', genres: ['Animacinis', 'Komedija'] },
+    { value: 'papuga', label: 'Papūga 🦜', genres: ['Nuotykių', 'Animacinis'] },
+    { value: 'zuvis', label: 'Žuvis 🐟', genres: ['Romantinis', 'Mokslinė fantastika'] },
+    { value: 'neturiu', label: 'Neturiu augintinio 🚫', genres: [] },
   ];
 
   const extraCriteriaOptions = [
@@ -41,55 +96,108 @@ export default function Recommendation() {
 
   const getRecommendations = () => {
     if (!mood) return [];
+
     const selectedMood = moods.find(m => m.value === mood);
     if (!selectedMood) return [];
 
-    let filtered = movies.filter(m =>
-      (m.genre || []).some(g => selectedMood.genres.includes(g))
+    let filtered = movies.filter(movie =>
+      (movie.genre || []).some(genre => selectedMood.genres.includes(genre))
     );
 
-    // Weather influence on duration preference
     const selectedWeather = weatherOptions.find(w => w.value === weather);
+
     if (selectedWeather) {
       if (selectedWeather.influence === 'short') {
         filtered.sort((a, b) => a.duration - b.duration);
-      } else if (selectedWeather.influence === 'long' || selectedWeather.influence === 'cozy') {
+      }
+
+      if (selectedWeather.influence === 'long' || selectedWeather.influence === 'cozy') {
         filtered.sort((a, b) => b.duration - a.duration);
-      } else if (selectedWeather.influence === 'intense') {
-        filtered = filtered.filter(m => (m.genre || []).some(g => ['Trileris', 'Veiksmo', 'Siaubo'].includes(g))).length > 0
-          ? filtered.filter(m => (m.genre || []).some(g => ['Trileris', 'Veiksmo', 'Siaubo'].includes(g)))
-          : filtered;
+      }
+
+      if (selectedWeather.influence === 'intense') {
+        const intenseMovies = filtered.filter(movie =>
+          (movie.genre || []).some(genre =>
+            ['Trileris', 'Veiksmo', 'Siaubo'].includes(genre)
+          )
+        );
+
+        if (intenseMovies.length > 0) {
+          filtered = intenseMovies;
+        }
       }
     }
 
-    // Shoe size: quirky factor — odd sizes get more obscure picks, even get popular
     if (shoeSize % 2 === 0) {
       filtered.sort((a, b) => (b.ratings || []).length - (a.ratings || []).length);
     } else {
       filtered.sort((a, b) => (a.ratings || []).length - (b.ratings || []).length);
     }
 
-    // Moon phase influence
-    if (moonPhase.name === 'Pilnatis') {
+    if (currentMoon === 'Pilnatis') {
       filtered.sort((a, b) => b.rating - a.rating);
     }
 
-    // Extra criteria
+    if (currentMoon === 'Jaunatis') {
+      filtered.sort((a, b) => new Date(b.releaseDate) - new Date(a.releaseDate));
+    }
+
+    if (currentMoon === 'Delčia') {
+      filtered.sort((a, b) => a.duration - b.duration);
+    }
+
+    const selectedZodiac = zodiacOptions.find(z => z.value === zodiac);
+
+    if (selectedZodiac) {
+      const zodiacFiltered = filtered.filter(movie =>
+        (movie.genre || []).some(genre => selectedZodiac.genres.includes(genre))
+      );
+
+      if (zodiacFiltered.length > 0) {
+        filtered = zodiacFiltered;
+      }
+    }
+
+    const selectedPet = petOptions.find(p => p.value === pet);
+
+    if (selectedPet && selectedPet.genres.length > 0) {
+      const petFiltered = filtered.filter(movie =>
+        (movie.genre || []).some(genre => selectedPet.genres.includes(genre))
+      );
+
+      if (petFiltered.length > 0) {
+        filtered = petFiltered;
+      }
+    }
+
     if (extraCriteria === 'trumpas') {
-      filtered = filtered.filter(m => m.duration < 120);
-    } else if (extraCriteria === 'ilgas') {
-      filtered = filtered.filter(m => m.duration > 150);
-    } else if (extraCriteria === 'naujas') {
-      filtered = filtered.filter(m => new Date(m.releaseDate).getFullYear() > 2010);
-    } else if (extraCriteria === 'klasika') {
-      filtered = filtered.filter(m => new Date(m.releaseDate).getFullYear() < 2000);
-    } else if (extraCriteria === 'auksciausia') {
+      filtered = filtered.filter(movie => movie.duration < 120);
+    }
+
+    if (extraCriteria === 'ilgas') {
+      filtered = filtered.filter(movie => movie.duration > 150);
+    }
+
+    if (extraCriteria === 'naujas') {
+      filtered = filtered.filter(movie =>
+        new Date(movie.releaseDate).getFullYear() > 2010
+      );
+    }
+
+    if (extraCriteria === 'klasika') {
+      filtered = filtered.filter(movie =>
+        new Date(movie.releaseDate).getFullYear() < 2000
+      );
+    }
+
+    if (extraCriteria === 'auksciausia') {
       filtered.sort((a, b) => b.imdbRating - a.imdbRating);
     }
 
-    // If no results after filtering, return top rated
     if (filtered.length === 0) {
-      filtered = [...movies].sort((a, b) => b.rating - a.rating).slice(0, 4);
+      filtered = [...movies]
+        .sort((a, b) => b.rating - a.rating)
+        .slice(0, 4);
     }
 
     return filtered.slice(0, 6);
@@ -104,18 +212,26 @@ export default function Recommendation() {
         <p>Leiskite mums parinkti filmą pagal jūsų nuotaiką ir sąlygas</p>
       </div>
 
-      <div className="rec-conditions">
-        <div className="condition-card">
-          <span className="condition-emoji">{moonPhase.emoji}</span>
-          <div>
-            <strong>Mėnulio fazė</strong>
-            <p>{moonPhase.name}</p>
-          </div>
-        </div>
+      <div className="rec-conditions moon-phases">
+        {moonPhases.map(phase => {
+          const isActive = currentMoon === phase.name;
+
+          return (
+            <div
+              key={phase.name}
+              className={`condition-card ${isActive ? 'active-moon' : ''}`}
+            >
+              <span className="condition-emoji">{phase.emoji}</span>
+              <div>
+                <strong>{phase.name}</strong>
+                {isActive && <p>Dabartinė fazė</p>}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       <div className="rec-sliders">
-        {/* Slider 1: Mood */}
         <div className="slider-section">
           <h3>1. Nuotaika</h3>
           <div className="mood-grid">
@@ -123,7 +239,10 @@ export default function Recommendation() {
               <button
                 key={m.value}
                 className={`mood-btn ${mood === m.value ? 'active' : ''}`}
-                onClick={() => { setMood(m.value); setShowResults(false); }}
+                onClick={() => {
+                  setMood(m.value);
+                  setShowResults(false);
+                }}
               >
                 {m.label}
               </button>
@@ -131,7 +250,6 @@ export default function Recommendation() {
           </div>
         </div>
 
-        {/* Slider 2: Weather */}
         <div className="slider-section">
           <h3>2. Oro sąlygos</h3>
           <div className="mood-grid">
@@ -139,7 +257,10 @@ export default function Recommendation() {
               <button
                 key={w.value}
                 className={`mood-btn ${weather === w.value ? 'active' : ''}`}
-                onClick={() => { setWeather(w.value); setShowResults(false); }}
+                onClick={() => {
+                  setWeather(w.value);
+                  setShowResults(false);
+                }}
               >
                 {w.label}
               </button>
@@ -147,7 +268,6 @@ export default function Recommendation() {
           </div>
         </div>
 
-        {/* Slider 3: Shoe Size */}
         <div className="slider-section">
           <h3>3. Batų dydis</h3>
           <div className="shoe-slider">
@@ -156,25 +276,70 @@ export default function Recommendation() {
               min="35"
               max="48"
               value={shoeSize}
-              onChange={(e) => { setShoeSize(Number(e.target.value)); setShowResults(false); }}
+              onChange={(e) => {
+                setShoeSize(Number(e.target.value));
+                setShowResults(false);
+              }}
               className="range-slider"
             />
+
             <span className="shoe-value">{shoeSize}</span>
+
             <p className="slider-hint">
-              {shoeSize % 2 === 0 ? 'Lyginis — populiaresni filmai' : 'Nelyginis — mažiau žinomi perliukai'}
+              {shoeSize % 2 === 0
+                ? 'Lyginis — populiaresni filmai'
+                : 'Nelyginis — mažiau žinomi perliukai'}
             </p>
           </div>
         </div>
 
-        {/* Extra criteria */}
         <div className="slider-section">
-          <h3>4. Papildomas kriterijus</h3>
+          <h3>4. Horoskopo ženklas</h3>
+          <div className="mood-grid">
+            {zodiacOptions.map(z => (
+              <button
+                key={z.value}
+                className={`mood-btn ${zodiac === z.value ? 'active' : ''}`}
+                onClick={() => {
+                  setZodiac(prev => (prev === z.value ? '' : z.value));
+                  setShowResults(false);
+                }}
+              >
+                {z.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="slider-section">
+          <h3>5. Naminis augintinis</h3>
+          <div className="mood-grid">
+            {petOptions.map(p => (
+              <button
+                key={p.value}
+                className={`mood-btn ${pet === p.value ? 'active' : ''}`}
+                onClick={() => {
+                  setPet(prev => (prev === p.value ? '' : p.value));
+                  setShowResults(false);
+                }}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="slider-section">
+          <h3>6. Papildomas kriterijus</h3>
           <div className="mood-grid">
             {extraCriteriaOptions.map(c => (
               <button
                 key={c.value}
                 className={`mood-btn ${extraCriteria === c.value ? 'active' : ''}`}
-                onClick={() => { setExtraCriteria(prev => prev === c.value ? '' : c.value); setShowResults(false); }}
+                onClick={() => {
+                  setExtraCriteria(prev => (prev === c.value ? '' : c.value));
+                  setShowResults(false);
+                }}
               >
                 {c.label}
               </button>
@@ -188,7 +353,11 @@ export default function Recommendation() {
           <button
             onClick={() => setShowResults(true)}
             className="btn-primary"
-            style={{ width: 'auto', padding: '0.8rem 2.5rem', fontSize: '1.05rem' }}
+            style={{
+              width: 'auto',
+              padding: '0.8rem 2.5rem',
+              fontSize: '1.05rem',
+            }}
           >
             Gauti rekomendacijas
           </button>
@@ -198,12 +367,16 @@ export default function Recommendation() {
       {showResults && recommendations.length > 0 && (
         <div className="rec-results">
           <h2>Jūsų rekomendacijos</h2>
+
           <p className="rec-note">
-            Atsižvelgiant į nuotaiką, {moonPhase.emoji} mėnulio fazę ({moonPhase.name}),
+            Atsižvelgiant į nuotaiką, {moonPhase.emoji} mėnulio fazę ({currentMoon}),
             {weather && ` ${weatherOptions.find(w => w.value === weather)?.label || ''} orus,`}
             {` batų dydį ${shoeSize}`}
-            {extraCriteria && `, papildomą kriterijų`}:
+            {zodiac && `, horoskopą ${zodiacOptions.find(z => z.value === zodiac)?.label}`}
+            {pet && `, augintinį ${petOptions.find(p => p.value === pet)?.label}`}
+            {extraCriteria && ', papildomą kriterijų'}:
           </p>
+
           <div className="movies-grid">
             {recommendations.map(movie => (
               <MovieCard key={movie.id} movie={movie} />
