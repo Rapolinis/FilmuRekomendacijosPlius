@@ -11,7 +11,9 @@ export default function Recommendation() {
   const [weather, setWeather] = useState('');
   const [shoeSize, setShoeSize] = useState(42);
   const [zodiac, setZodiac] = useState('');
-  const [pet, setPet] = useState('');
+  // Pets is multi-select — user can pick any combination (e.g. "Šuo + Katė")
+  // and the recommendation engine unions the genre hints from each pick.
+  const [pets, setPets] = useState([]);
   const [extraCriteria, setExtraCriteria] = useState('');
   const [showResults, setShowResults] = useState(false);
 
@@ -158,11 +160,17 @@ export default function Recommendation() {
       }
     }
 
-    const selectedPet = petOptions.find(p => p.value === pet);
+    // Union genre hints across all selected pets — broadens the match set
+    // rather than narrowing it. "Neturiu" carries no genres, so picking it
+    // alongside another pet is a no-op for the filter.
+    const petGenres = pets
+      .map((value) => petOptions.find((p) => p.value === value))
+      .filter(Boolean)
+      .flatMap((p) => p.genres);
 
-    if (selectedPet && selectedPet.genres.length > 0) {
-      const petFiltered = filtered.filter(movie =>
-        (movie.genre || []).some(genre => selectedPet.genres.includes(genre))
+    if (petGenres.length > 0) {
+      const petFiltered = filtered.filter((movie) =>
+        (movie.genre || []).some((genre) => petGenres.includes(genre)),
       );
 
       if (petFiltered.length > 0) {
@@ -312,14 +320,21 @@ export default function Recommendation() {
         </div>
 
         <div className="slider-section">
-          <h3>5. Naminis augintinis</h3>
+          <h3>5. Naminis augintinis (galima pasirinkti kelis)</h3>
           <div className="mood-grid">
             {petOptions.map(p => (
               <button
                 key={p.value}
-                className={`mood-btn ${pet === p.value ? 'active' : ''}`}
+                className={`mood-btn ${pets.includes(p.value) ? 'active' : ''}`}
                 onClick={() => {
-                  setPet(prev => (prev === p.value ? '' : p.value));
+                  setPets(prev => {
+                    if (prev.includes(p.value)) {
+                      return prev.filter(v => v !== p.value);
+                    }
+                    // "Neturiu" is exclusive — picking it clears other pets.
+                    if (p.value === 'neturiu') return ['neturiu'];
+                    return [...prev.filter(v => v !== 'neturiu'), p.value];
+                  });
                   setShowResults(false);
                 }}
               >
@@ -373,7 +388,7 @@ export default function Recommendation() {
             {weather && ` ${weatherOptions.find(w => w.value === weather)?.label || ''} orus,`}
             {` batų dydį ${shoeSize}`}
             {zodiac && `, horoskopą ${zodiacOptions.find(z => z.value === zodiac)?.label}`}
-            {pet && `, augintinį ${petOptions.find(p => p.value === pet)?.label}`}
+            {pets.length > 0 && `, augintinius ${pets.map(v => petOptions.find(p => p.value === v)?.label).filter(Boolean).join(', ')}`}
             {extraCriteria && ', papildomą kriterijų'}:
           </p>
 
