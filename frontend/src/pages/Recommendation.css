@@ -24,7 +24,8 @@
 }
 
 .condition-emoji {
-  font-size: 2.5rem;
+  font-size: 3.5rem;
+  line-height: 1;
 }
 
 .condition-card strong {
@@ -45,14 +46,20 @@
 }
 
 .mood-btn {
-  padding: 1rem;
+  padding: 1.1rem 1rem;
   border: 2px solid #e2e8f0;
-  border-radius: 12px;
+  border-radius: 14px;
   background: #fff;
   cursor: pointer;
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.25;
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-align: center;
 }
 
 .mood-btn:hover {
