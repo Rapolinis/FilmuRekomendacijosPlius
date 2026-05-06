@@ -174,6 +174,7 @@ export default function Recommendation() {
   ];
 
   const extraCriteriaOptions = [
+    { value: 'apie2val', label: 'Apie 2 val. ⏱️' },
     { value: 'trumpas', label: 'Trumpas filmas (< 2 val)' },
     { value: 'ilgas', label: 'Ilgas filmas (> 2.5 val)' },
     { value: 'naujas', label: 'Naujesnis filmas (po 2010)' },
@@ -263,29 +264,39 @@ export default function Recommendation() {
       }
     }
 
-    if (extraCriteria === 'trumpas') {
-      filtered = filtered.filter(movie => movie.duration < 120);
-    }
+    // ── Extra criteria ──────────────────────────────────────────────
+    // Most options now score-rank rather than hard-filter so we don't
+    // collapse the result set to zero on small libraries. The engine
+    // computes a per-movie score, sorts, and slices off the top 6.
+    const scoreFor = (movie) => {
+      const duration = movie.duration ?? 0;
+      const year = new Date(movie.releaseDate).getFullYear() || 0;
+      const imdb = movie.imdbRating ?? 0;
+      switch (extraCriteria) {
+        case 'apie2val':
+          // 120 min is the sweet spot. Penalise distance from 2 hours so
+          // 100min and 140min movies still rank but ~120 wins.
+          return -Math.abs(duration - 120);
+        case 'trumpas':
+          // Prefer shorter — but still rank longer ones, just lower.
+          return duration < 120 ? 1000 - duration : -duration;
+        case 'ilgas':
+          return duration > 150 ? 1000 + duration : duration;
+        case 'naujas':
+          return year > 2010 ? 1000 + year : year;
+        case 'klasika':
+          return year < 2000 && year > 0 ? 1000 + (2000 - year) : -year;
+        case 'auksciausia':
+          return imdb;
+        default:
+          // No explicit extra criterion → mild ~2hr bias as a tiebreaker.
+          // Keeps the historical ordering while nudging the average match
+          // toward feature-length films.
+          return -Math.abs(duration - 120) * 0.1;
+      }
+    };
 
-    if (extraCriteria === 'ilgas') {
-      filtered = filtered.filter(movie => movie.duration > 150);
-    }
-
-    if (extraCriteria === 'naujas') {
-      filtered = filtered.filter(movie =>
-        new Date(movie.releaseDate).getFullYear() > 2010
-      );
-    }
-
-    if (extraCriteria === 'klasika') {
-      filtered = filtered.filter(movie =>
-        new Date(movie.releaseDate).getFullYear() < 2000
-      );
-    }
-
-    if (extraCriteria === 'auksciausia') {
-      filtered.sort((a, b) => b.imdbRating - a.imdbRating);
-    }
+    filtered = [...filtered].sort((a, b) => scoreFor(b) - scoreFor(a));
 
     if (filtered.length === 0) {
       filtered = [...movies]
