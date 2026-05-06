@@ -1,8 +1,19 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useData } from '../context/DataContext';
 import MovieCard from '../components/MovieCard';
 import { getMoonPhase } from '../utils/helpers';
 import './Recommendation.css';
+
+// Multi-step "thinking" sequence shown while we compute recommendations.
+// Each step is intentionally short — total ~2.5s — so users feel the app
+// is working but never wait awkwardly long. Pure theatre, no real I/O.
+const LOADING_STEPS = [
+  '🎭 Analizuojam tavo nuotaiką…',
+  '🐶 Lyginam su augintinių pomėgiais…',
+  '🌙 Tikrinam mėnulio fazę…',
+  '⭐ Lyginam su horoskopu…',
+  '🎬 Renkam geriausius variantus…',
+];
 
 export default function Recommendation() {
   const { movies } = useData();
@@ -16,6 +27,33 @@ export default function Recommendation() {
   const [pets, setPets] = useState([]);
   const [extraCriteria, setExtraCriteria] = useState('');
   const [showResults, setShowResults] = useState(false);
+
+  // `loadingStep` is null when idle, otherwise the index of the current
+  // message in LOADING_STEPS. We advance it on a timer; when it goes past
+  // the last step we surface the results.
+  const [loadingStep, setLoadingStep] = useState(null);
+
+  useEffect(() => {
+    if (loadingStep === null) return;
+    // The timer always advances; once we step past the last message we
+    // commit to results in the same callback. Setting state inside a
+    // timer (rather than synchronously in the effect body) keeps React's
+    // strict effects happy.
+    const timer = setTimeout(() => {
+      if (loadingStep + 1 >= LOADING_STEPS.length) {
+        setShowResults(true);
+        setLoadingStep(null);
+      } else {
+        setLoadingStep(loadingStep + 1);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [loadingStep]);
+
+  const startRecommendation = () => {
+    setShowResults(false);
+    setLoadingStep(0);
+  };
 
   const moonPhase = useMemo(() => getMoonPhase(), []);
 
@@ -363,10 +401,10 @@ export default function Recommendation() {
         </div>
       </div>
 
-      {mood && (
+      {mood && loadingStep === null && (
         <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
           <button
-            onClick={() => setShowResults(true)}
+            onClick={startRecommendation}
             className="btn-primary"
             style={{
               width: 'auto',
@@ -376,6 +414,28 @@ export default function Recommendation() {
           >
             Gauti rekomendacijas
           </button>
+        </div>
+      )}
+
+      {loadingStep !== null && (
+        <div className="rec-loading" role="status" aria-live="polite">
+          <div className="rec-loading-spinner" aria-hidden="true" />
+          <div className="rec-loading-steps">
+            {LOADING_STEPS.map((step, i) => (
+              <p
+                key={step}
+                className={`rec-loading-step ${
+                  i < loadingStep
+                    ? 'done'
+                    : i === loadingStep
+                      ? 'active'
+                      : 'pending'
+                }`}
+              >
+                {i < loadingStep ? '✓' : i === loadingStep ? '•' : '○'} {step}
+              </p>
+            ))}
+          </div>
         </div>
       )}
 

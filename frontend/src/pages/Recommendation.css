@@ -157,3 +157,57 @@
   box-shadow: 0 0 18px rgba(250, 204, 21, 0.55);
   transform: scale(1.03);
 }
+/* ── Multi-step loading sequence ─────────────────────────────────────── */
+.rec-loading {
+  margin-top: 2rem;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  max-width: 520px;
+  margin-inline: auto;
+}
+
+.rec-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #3a79a6;
+  border-radius: 50%;
+  animation: rec-spin 0.9s linear infinite;
+  flex-shrink: 0;
+  margin-top: 0.2rem;
+}
+
+@keyframes rec-spin {
+  to { transform: rotate(360deg); }
+}
+
+.rec-loading-steps {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rec-loading-step {
+  margin: 0;
+  font-size: 0.95rem;
+  transition: all 0.25s;
+}
+
+.rec-loading-step.done {
+  color: #4a9d6e;
+}
+
+.rec-loading-step.active {
+  color: #236476;
+  font-weight: 600;
+}
+
+.rec-loading-step.pending {
+  color: #cbd5e0;
+}
