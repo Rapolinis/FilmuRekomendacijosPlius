@@ -20,6 +20,53 @@ export default function Recommendation() {
 
   const [mood, setMood] = useState('');
   const [weather, setWeather] = useState('');
+  // Live weather state — populated by OpenWeatherMap if VITE_OWM_API_KEY
+  // is set in the environment. When unset (or fetch fails) the field
+  // stays null and the user is asked to pick weather manually below.
+  const [liveWeather, setLiveWeather] = useState(null);
+  const [liveWeatherError, setLiveWeatherError] = useState(null);
+
+  useEffect(() => {
+    const apiKey = import.meta.env.VITE_OWM_API_KEY;
+    if (!apiKey) return;
+
+    // Vilnius coords as the default location — the app's market is
+    // Lithuania-wide but most users are in or near the capital. A future
+    // iteration could prompt for geolocation; for now this is enough to
+    // demo the live data path.
+    const url = `https://api.openweathermap.org/data/2.5/weather?lat=54.687&lon=25.279&units=metric&appid=${apiKey}`;
+    let cancelled = false;
+    fetch(url)
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error('weather-fetch-failed'))))
+      .then((data) => {
+        if (cancelled) return;
+        const main = (data?.weather?.[0]?.main || '').toLowerCase();
+        // Map OWM's `main` field to our existing weather option keys
+        // so the recommendation engine doesn't need to learn a second
+        // vocabulary. Anything we can't classify falls back to debesuota.
+        let mapped = 'debesuota';
+        if (main.includes('clear')) mapped = 'sauleta';
+        else if (main.includes('rain') || main.includes('drizzle')) mapped = 'lietinga';
+        else if (main.includes('snow')) mapped = 'snieginga';
+        else if (main.includes('thunder')) mapped = 'audra';
+        else if (main.includes('cloud')) mapped = 'debesuota';
+        setLiveWeather({
+          mapped,
+          temp: Math.round(data?.main?.temp ?? 0),
+          description: data?.weather?.[0]?.description ?? '',
+          city: data?.name ?? 'Vilnius',
+        });
+        setWeather(mapped);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setLiveWeatherError('Nepavyko gauti orų — pasirinkite rankiniu būdu.');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const [shoeSize, setShoeSize] = useState(42);
   const [zodiac, setZodiac] = useState('');
   // Pets is multi-select — user can pick any combination (e.g. "Šuo + Katė")
@@ -298,6 +345,15 @@ export default function Recommendation() {
 
         <div className="slider-section">
           <h3>2. Oro sąlygos</h3>
+          {liveWeather && (
+            <p className="live-weather-banner">
+              📍 {liveWeather.city}: {liveWeather.temp}°C, {liveWeather.description}
+              {' '}— pasirinkimas atnaujintas pagal realius orus.
+            </p>
+          )}
+          {liveWeatherError && (
+            <p className="live-weather-error">{liveWeatherError}</p>
+          )}
           <div className="mood-grid">
             {weatherOptions.map(w => (
               <button
