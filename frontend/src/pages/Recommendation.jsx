@@ -80,9 +80,9 @@ export default function Recommendation() {
   const petOptions = [
     { value: 'suo', label: 'Šuo 🐶', genres: ['Nuotykių', 'Komedija'] },
     { value: 'kate', label: 'Katė 🐱', genres: ['Drama', 'Trileris'] },
-    { value: 'ziurkenas', label: 'Žiurkėnas 🐹', genres: ['Animacinis', 'Komedija'] },
-    { value: 'papuga', label: 'Papūga 🦜', genres: ['Nuotykių', 'Animacinis'] },
-    { value: 'zuvis', label: 'Žuvis 🐟', genres: ['Romantinis', 'Mokslinė fantastika'] },
+    { value: 'arklys', label: 'Arklys 🐴', genres: ['Nuotykių', 'Drama'] },
+    { value: 'smauglys', label: 'Smauglys 🐍', genres: ['Trileris', 'Siaubo'] },
+    { value: 'juruKiaulyte', label: 'Jūrų kiaulytė 🐹', genres: ['Animacinis', 'Komedija'] },
     { value: 'neturiu', label: 'Neturiu augintinio 🚫', genres: [] },
   ];
 
