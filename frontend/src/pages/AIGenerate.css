@@ -201,3 +201,76 @@
     flex-direction: column;
   }
 }
+
+/* ── Robot loading animation ─────────────────────────────────────────── */
+.ai-loading {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  background: #fff;
+  border-radius: 14px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin-top: 2rem;
+  max-width: 560px;
+  margin-inline: auto;
+}
+
+.ai-bot {
+  width: 96px;
+  height: 96px;
+  flex-shrink: 0;
+}
+
+.ai-bot-antenna {
+  animation: ai-bot-ping 1.4s ease-in-out infinite;
+  transform-origin: 60px 8px;
+}
+
+@keyframes ai-bot-ping {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.6); opacity: 0.4; }
+}
+
+.ai-bot-eye {
+  animation: ai-bot-blink 3.2s ease-in-out infinite;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+@keyframes ai-bot-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+
+.ai-bot-gear {
+  animation: ai-bot-spin 2.4s linear infinite;
+}
+
+@keyframes ai-bot-spin {
+  to { transform: rotate(360deg); }
+}
+
+.ai-loading-steps {
+  flex: 1;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.92rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ai-step {
+  margin: 0;
+  color: #4a9d6e;
+}
+
+.ai-step.active {
+  color: #236476;
+  font-weight: 600;
+  animation: ai-step-blink 0.8s steps(2, start) infinite;
+}
+
+@keyframes ai-step-blink {
+  to { opacity: 0.55; }
+}
