@@ -72,7 +72,11 @@ export default function Recommendation() {
   // Pets is multi-select — user can pick any combination (e.g. "Šuo + Katė")
   // and the recommendation engine unions the genre hints from each pick.
   const [pets, setPets] = useState([]);
-  const [extraCriteria, setExtraCriteria] = useState('');
+  const [extraCriteria, setExtraCriteria] = useState({
+    duration: '',
+    date: '',
+    rating: '',
+  });
   const [showResults, setShowResults] = useState(false);
 
   // `loadingStep` is null when idle, otherwise the index of the current
@@ -173,13 +177,31 @@ export default function Recommendation() {
     { value: 'neturiu', label: 'Neturiu augintinio 🚫', genres: [] },
   ];
 
-  const extraCriteriaOptions = [
-    { value: 'apie2val', label: 'Apie 2 val. ⏱️' },
-    { value: 'trumpas', label: 'Trumpas filmas (< 2 val)' },
-    { value: 'ilgas', label: 'Ilgas filmas (> 2.5 val)' },
-    { value: 'naujas', label: 'Naujesnis filmas (po 2010)' },
-    { value: 'klasika', label: 'Klasika (prieš 2000)' },
-    { value: 'auksciausia', label: 'Aukščiausias IMDb' },
+  const extraCriteriaGroups = [
+    {
+      key: 'duration',
+      title: 'Trukmė',
+      options: [
+        { value: 'apie2val', label: 'Apie 2 val. ⏱️' },
+        { value: 'trumpas', label: 'Trumpas filmas (< 2 val)' },
+        { value: 'ilgas', label: 'Ilgas filmas (> 2.5 val)' },
+      ],
+    },
+    {
+      key: 'date',
+      title: 'Data',
+      options: [
+        { value: 'naujas', label: 'Naujesnis filmas (po 2010)' },
+        { value: 'klasika', label: 'Klasika (prieš 2000)' },
+      ],
+    },
+    {
+      key: 'rating',
+      title: 'Įvertinimas',
+      options: [
+        { value: 'auksciausia', label: 'Aukščiausias IMDb' },
+      ],
+    },
   ];
 
   const getRecommendations = () => {
@@ -265,14 +287,15 @@ export default function Recommendation() {
     }
 
     // ── Extra criteria ──────────────────────────────────────────────
-    // Most options now score-rank rather than hard-filter so we don't
-    // collapse the result set to zero on small libraries. The engine
-    // computes a per-movie score, sorts, and slices off the top 6.
-    const scoreFor = (movie) => {
+    // Each extra criteria column is single-select. Multiple selected
+    // columns are combined into one ranking score so, for example, a user
+    // can prefer short + new + highest IMDb at the same time.
+    const scoreCriterion = (movie, criterion) => {
       const duration = movie.duration ?? 0;
       const year = new Date(movie.releaseDate).getFullYear() || 0;
-      const imdb = movie.imdbRating ?? 0;
-      switch (extraCriteria) {
+      const imdb = movie.imdbRating ?? movie.rating ?? 0;
+
+      switch (criterion) {
         case 'apie2val':
           // 120 min is the sweet spot. Penalise distance from 2 hours so
           // 100min and 140min movies still rank but ~120 wins.
@@ -287,13 +310,26 @@ export default function Recommendation() {
         case 'klasika':
           return year < 2000 && year > 0 ? 1000 + (2000 - year) : -year;
         case 'auksciausia':
-          return imdb;
+          return imdb * 100;
         default:
-          // No explicit extra criterion → mild ~2hr bias as a tiebreaker.
-          // Keeps the historical ordering while nudging the average match
-          // toward feature-length films.
-          return -Math.abs(duration - 120) * 0.1;
+          return 0;
       }
+    };
+
+    const selectedExtraCriteria = Object.values(extraCriteria).filter(Boolean);
+
+    const scoreFor = (movie) => {
+      if (selectedExtraCriteria.length === 0) {
+        // No explicit extra criterion → mild ~2hr bias as a tiebreaker.
+        // Keeps the historical ordering while nudging the average match
+        // toward feature-length films.
+        return -Math.abs((movie.duration ?? 0) - 120) * 0.1;
+      }
+
+      return selectedExtraCriteria.reduce(
+        (score, criterion) => score + scoreCriterion(movie, criterion),
+        0,
+      );
     };
 
     filtered = [...filtered].sort((a, b) => scoreFor(b) - scoreFor(a));
@@ -451,18 +487,28 @@ export default function Recommendation() {
 
         <div className="slider-section">
           <h3>6. Papildomas kriterijus</h3>
-          <div className="mood-grid">
-            {extraCriteriaOptions.map(c => (
-              <button
-                key={c.value}
-                className={`mood-btn ${extraCriteria === c.value ? 'active' : ''}`}
-                onClick={() => {
-                  setExtraCriteria(prev => (prev === c.value ? '' : c.value));
-                  setShowResults(false);
-                }}
-              >
-                {c.label}
-              </button>
+          <div className="extra-criteria-grid">
+            {extraCriteriaGroups.map(group => (
+              <div key={group.key} className="extra-criteria-column">
+                <h4>{group.title}</h4>
+                <div className="extra-criteria-options">
+                  {group.options.map(c => (
+                    <button
+                      key={c.value}
+                      className={`mood-btn ${extraCriteria[group.key] === c.value ? 'active' : ''}`}
+                      onClick={() => {
+                        setExtraCriteria(prev => ({
+                          ...prev,
+                          [group.key]: prev[group.key] === c.value ? '' : c.value,
+                        }));
+                        setShowResults(false);
+                      }}
+                    >
+                      {c.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -516,7 +562,7 @@ export default function Recommendation() {
             {` batų dydį ${shoeSize}`}
             {zodiac && `, horoskopą ${zodiacOptions.find(z => z.value === zodiac)?.label}`}
             {pets.length > 0 && `, augintinius ${pets.map(v => petOptions.find(p => p.value === v)?.label).filter(Boolean).join(', ')}`}
-            {extraCriteria && ', papildomą kriterijų'}:
+            {Object.values(extraCriteria).some(Boolean) && ', papildomus kriterijus'}:
           </p>
 
           <div className="movies-grid">

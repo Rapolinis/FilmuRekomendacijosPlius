@@ -230,3 +230,45 @@
   border-radius: 10px;
   font-size: 0.9rem;
 }
+
+.extra-criteria-grid {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 1rem;
+  width: 100%;
+}
+
+.extra-criteria-column {
+  border: 2px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1rem;
+  background: #f8fafc;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.extra-criteria-column h4 {
+  color: #236476;
+  margin: 0 0 0.8rem;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.extra-criteria-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.extra-criteria-options .mood-btn {
+  width: 100%;
+  min-height: 72px;
+  font-size: 1rem;
+}
+
+@media (max-width: 800px) {
+  .extra-criteria-grid {
+    flex-direction: column;
+  }
+}
