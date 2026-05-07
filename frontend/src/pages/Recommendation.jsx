@@ -1,19 +1,106 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useData } from '../context/DataContext';
 import MovieCard from '../components/MovieCard';
 import { getMoonPhase } from '../utils/helpers';
 import './Recommendation.css';
+
+// Multi-step "thinking" sequence shown while we compute recommendations.
+// Each step is intentionally short — total ~2.5s — so users feel the app
+// is working but never wait awkwardly long. Pure theatre, no real I/O.
+const LOADING_STEPS = [
+  '🎭 Analizuojam tavo nuotaiką…',
+  '🐶 Lyginam su augintinių pomėgiais…',
+  '🌙 Tikrinam mėnulio fazę…',
+  '⭐ Lyginam su horoskopu…',
+  '🎬 Renkam geriausius variantus…',
+];
 
 export default function Recommendation() {
   const { movies } = useData();
 
   const [mood, setMood] = useState('');
   const [weather, setWeather] = useState('');
+  // Live weather state — populated by OpenWeatherMap if VITE_OWM_API_KEY
+  // is set in the environment. When unset (or fetch fails) the field
+  // stays null and the user is asked to pick weather manually below.
+  const [liveWeather, setLiveWeather] = useState(null);
+  const [liveWeatherError, setLiveWeatherError] = useState(null);
+
+  useEffect(() => {
+    const apiKey = import.meta.env.VITE_OWM_API_KEY;
+    if (!apiKey) return;
+
+    // Vilnius coords as the default location — the app's market is
+    // Lithuania-wide but most users are in or near the capital. A future
+    // iteration could prompt for geolocation; for now this is enough to
+    // demo the live data path.
+    const url = `https://api.openweathermap.org/data/2.5/weather?lat=54.687&lon=25.279&units=metric&appid=${apiKey}`;
+    let cancelled = false;
+    fetch(url)
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error('weather-fetch-failed'))))
+      .then((data) => {
+        if (cancelled) return;
+        const main = (data?.weather?.[0]?.main || '').toLowerCase();
+        // Map OWM's `main` field to our existing weather option keys
+        // so the recommendation engine doesn't need to learn a second
+        // vocabulary. Anything we can't classify falls back to debesuota.
+        let mapped = 'debesuota';
+        if (main.includes('clear')) mapped = 'sauleta';
+        else if (main.includes('rain') || main.includes('drizzle')) mapped = 'lietinga';
+        else if (main.includes('snow')) mapped = 'snieginga';
+        else if (main.includes('thunder')) mapped = 'audra';
+        else if (main.includes('cloud')) mapped = 'debesuota';
+        setLiveWeather({
+          mapped,
+          temp: Math.round(data?.main?.temp ?? 0),
+          description: data?.weather?.[0]?.description ?? '',
+          city: data?.name ?? 'Vilnius',
+        });
+        setWeather(mapped);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setLiveWeatherError('Nepavyko gauti orų — pasirinkite rankiniu būdu.');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const [shoeSize, setShoeSize] = useState(42);
   const [zodiac, setZodiac] = useState('');
-  const [pet, setPet] = useState('');
+  // Pets is multi-select — user can pick any combination (e.g. "Šuo + Katė")
+  // and the recommendation engine unions the genre hints from each pick.
+  const [pets, setPets] = useState([]);
   const [extraCriteria, setExtraCriteria] = useState('');
   const [showResults, setShowResults] = useState(false);
+
+  // `loadingStep` is null when idle, otherwise the index of the current
+  // message in LOADING_STEPS. We advance it on a timer; when it goes past
+  // the last step we surface the results.
+  const [loadingStep, setLoadingStep] = useState(null);
+
+  useEffect(() => {
+    if (loadingStep === null) return;
+    // The timer always advances; once we step past the last message we
+    // commit to results in the same callback. Setting state inside a
+    // timer (rather than synchronously in the effect body) keeps React's
+    // strict effects happy.
+    const timer = setTimeout(() => {
+      if (loadingStep + 1 >= LOADING_STEPS.length) {
+        setShowResults(true);
+        setLoadingStep(null);
+      } else {
+        setLoadingStep(loadingStep + 1);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [loadingStep]);
+
+  const startRecommendation = () => {
+    setShowResults(false);
+    setLoadingStep(0);
+  };
 
   const moonPhase = useMemo(() => getMoonPhase(), []);
 
@@ -80,13 +167,14 @@ export default function Recommendation() {
   const petOptions = [
     { value: 'suo', label: 'Šuo 🐶', genres: ['Nuotykių', 'Komedija'] },
     { value: 'kate', label: 'Katė 🐱', genres: ['Drama', 'Trileris'] },
-    { value: 'ziurkenas', label: 'Žiurkėnas 🐹', genres: ['Animacinis', 'Komedija'] },
-    { value: 'papuga', label: 'Papūga 🦜', genres: ['Nuotykių', 'Animacinis'] },
-    { value: 'zuvis', label: 'Žuvis 🐟', genres: ['Romantinis', 'Mokslinė fantastika'] },
+    { value: 'arklys', label: 'Arklys 🐴', genres: ['Nuotykių', 'Drama'] },
+    { value: 'smauglys', label: 'Smauglys 🐍', genres: ['Trileris', 'Siaubo'] },
+    { value: 'juruKiaulyte', label: 'Jūrų kiaulytė 🐹', genres: ['Animacinis', 'Komedija'] },
     { value: 'neturiu', label: 'Neturiu augintinio 🚫', genres: [] },
   ];
 
   const extraCriteriaOptions = [
+    { value: 'apie2val', label: 'Apie 2 val. ⏱️' },
     { value: 'trumpas', label: 'Trumpas filmas (< 2 val)' },
     { value: 'ilgas', label: 'Ilgas filmas (> 2.5 val)' },
     { value: 'naujas', label: 'Naujesnis filmas (po 2010)' },
@@ -158,11 +246,17 @@ export default function Recommendation() {
       }
     }
 
-    const selectedPet = petOptions.find(p => p.value === pet);
+    // Union genre hints across all selected pets — broadens the match set
+    // rather than narrowing it. "Neturiu" carries no genres, so picking it
+    // alongside another pet is a no-op for the filter.
+    const petGenres = pets
+      .map((value) => petOptions.find((p) => p.value === value))
+      .filter(Boolean)
+      .flatMap((p) => p.genres);
 
-    if (selectedPet && selectedPet.genres.length > 0) {
-      const petFiltered = filtered.filter(movie =>
-        (movie.genre || []).some(genre => selectedPet.genres.includes(genre))
+    if (petGenres.length > 0) {
+      const petFiltered = filtered.filter((movie) =>
+        (movie.genre || []).some((genre) => petGenres.includes(genre)),
       );
 
       if (petFiltered.length > 0) {
@@ -170,29 +264,39 @@ export default function Recommendation() {
       }
     }
 
-    if (extraCriteria === 'trumpas') {
-      filtered = filtered.filter(movie => movie.duration < 120);
-    }
+    // ── Extra criteria ──────────────────────────────────────────────
+    // Most options now score-rank rather than hard-filter so we don't
+    // collapse the result set to zero on small libraries. The engine
+    // computes a per-movie score, sorts, and slices off the top 6.
+    const scoreFor = (movie) => {
+      const duration = movie.duration ?? 0;
+      const year = new Date(movie.releaseDate).getFullYear() || 0;
+      const imdb = movie.imdbRating ?? 0;
+      switch (extraCriteria) {
+        case 'apie2val':
+          // 120 min is the sweet spot. Penalise distance from 2 hours so
+          // 100min and 140min movies still rank but ~120 wins.
+          return -Math.abs(duration - 120);
+        case 'trumpas':
+          // Prefer shorter — but still rank longer ones, just lower.
+          return duration < 120 ? 1000 - duration : -duration;
+        case 'ilgas':
+          return duration > 150 ? 1000 + duration : duration;
+        case 'naujas':
+          return year > 2010 ? 1000 + year : year;
+        case 'klasika':
+          return year < 2000 && year > 0 ? 1000 + (2000 - year) : -year;
+        case 'auksciausia':
+          return imdb;
+        default:
+          // No explicit extra criterion → mild ~2hr bias as a tiebreaker.
+          // Keeps the historical ordering while nudging the average match
+          // toward feature-length films.
+          return -Math.abs(duration - 120) * 0.1;
+      }
+    };
 
-    if (extraCriteria === 'ilgas') {
-      filtered = filtered.filter(movie => movie.duration > 150);
-    }
-
-    if (extraCriteria === 'naujas') {
-      filtered = filtered.filter(movie =>
-        new Date(movie.releaseDate).getFullYear() > 2010
-      );
-    }
-
-    if (extraCriteria === 'klasika') {
-      filtered = filtered.filter(movie =>
-        new Date(movie.releaseDate).getFullYear() < 2000
-      );
-    }
-
-    if (extraCriteria === 'auksciausia') {
-      filtered.sort((a, b) => b.imdbRating - a.imdbRating);
-    }
+    filtered = [...filtered].sort((a, b) => scoreFor(b) - scoreFor(a));
 
     if (filtered.length === 0) {
       filtered = [...movies]
@@ -252,6 +356,15 @@ export default function Recommendation() {
 
         <div className="slider-section">
           <h3>2. Oro sąlygos</h3>
+          {liveWeather && (
+            <p className="live-weather-banner">
+              📍 {liveWeather.city}: {liveWeather.temp}°C, {liveWeather.description}
+              {' '}— pasirinkimas atnaujintas pagal realius orus.
+            </p>
+          )}
+          {liveWeatherError && (
+            <p className="live-weather-error">{liveWeatherError}</p>
+          )}
           <div className="mood-grid">
             {weatherOptions.map(w => (
               <button
@@ -312,14 +425,21 @@ export default function Recommendation() {
         </div>
 
         <div className="slider-section">
-          <h3>5. Naminis augintinis</h3>
+          <h3>5. Naminis augintinis (galima pasirinkti kelis)</h3>
           <div className="mood-grid">
             {petOptions.map(p => (
               <button
                 key={p.value}
-                className={`mood-btn ${pet === p.value ? 'active' : ''}`}
+                className={`mood-btn ${pets.includes(p.value) ? 'active' : ''}`}
                 onClick={() => {
-                  setPet(prev => (prev === p.value ? '' : p.value));
+                  setPets(prev => {
+                    if (prev.includes(p.value)) {
+                      return prev.filter(v => v !== p.value);
+                    }
+                    // "Neturiu" is exclusive — picking it clears other pets.
+                    if (p.value === 'neturiu') return ['neturiu'];
+                    return [...prev.filter(v => v !== 'neturiu'), p.value];
+                  });
                   setShowResults(false);
                 }}
               >
@@ -348,10 +468,10 @@ export default function Recommendation() {
         </div>
       </div>
 
-      {mood && (
+      {mood && loadingStep === null && (
         <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
           <button
-            onClick={() => setShowResults(true)}
+            onClick={startRecommendation}
             className="btn-primary"
             style={{
               width: 'auto',
@@ -364,6 +484,28 @@ export default function Recommendation() {
         </div>
       )}
 
+      {loadingStep !== null && (
+        <div className="rec-loading" role="status" aria-live="polite">
+          <div className="rec-loading-spinner" aria-hidden="true" />
+          <div className="rec-loading-steps">
+            {LOADING_STEPS.map((step, i) => (
+              <p
+                key={step}
+                className={`rec-loading-step ${
+                  i < loadingStep
+                    ? 'done'
+                    : i === loadingStep
+                      ? 'active'
+                      : 'pending'
+                }`}
+              >
+                {i < loadingStep ? '✓' : i === loadingStep ? '•' : '○'} {step}
+              </p>
+            ))}
+          </div>
+        </div>
+      )}
+
       {showResults && recommendations.length > 0 && (
         <div className="rec-results">
           <h2>Jūsų rekomendacijos</h2>
@@ -373,7 +515,7 @@ export default function Recommendation() {
             {weather && ` ${weatherOptions.find(w => w.value === weather)?.label || ''} orus,`}
             {` batų dydį ${shoeSize}`}
             {zodiac && `, horoskopą ${zodiacOptions.find(z => z.value === zodiac)?.label}`}
-            {pet && `, augintinį ${petOptions.find(p => p.value === pet)?.label}`}
+            {pets.length > 0 && `, augintinius ${pets.map(v => petOptions.find(p => p.value === v)?.label).filter(Boolean).join(', ')}`}
             {extraCriteria && ', papildomą kriterijų'}:
           </p>
 

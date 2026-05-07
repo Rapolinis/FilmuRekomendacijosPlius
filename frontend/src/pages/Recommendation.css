@@ -24,7 +24,8 @@
 }
 
 .condition-emoji {
-  font-size: 2.5rem;
+  font-size: 3.5rem;
+  line-height: 1;
 }
 
 .condition-card strong {
@@ -45,14 +46,20 @@
 }
 
 .mood-btn {
-  padding: 1rem;
+  padding: 1.1rem 1rem;
   border: 2px solid #e2e8f0;
-  border-radius: 12px;
+  border-radius: 14px;
   background: #fff;
   cursor: pointer;
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.25;
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-align: center;
 }
 
 .mood-btn:hover {
@@ -149,4 +156,77 @@
   border: 3px solid #facc15;
   box-shadow: 0 0 18px rgba(250, 204, 21, 0.55);
   transform: scale(1.03);
+}
+/* ── Multi-step loading sequence ─────────────────────────────────────── */
+.rec-loading {
+  margin-top: 2rem;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  max-width: 520px;
+  margin-inline: auto;
+}
+
+.rec-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #3a79a6;
+  border-radius: 50%;
+  animation: rec-spin 0.9s linear infinite;
+  flex-shrink: 0;
+  margin-top: 0.2rem;
+}
+
+@keyframes rec-spin {
+  to { transform: rotate(360deg); }
+}
+
+.rec-loading-steps {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rec-loading-step {
+  margin: 0;
+  font-size: 0.95rem;
+  transition: all 0.25s;
+}
+
+.rec-loading-step.done {
+  color: #4a9d6e;
+}
+
+.rec-loading-step.active {
+  color: #236476;
+  font-weight: 600;
+}
+
+.rec-loading-step.pending {
+  color: #cbd5e0;
+}
+
+.live-weather-banner {
+  margin: 0 0 0.8rem;
+  padding: 0.6rem 0.9rem;
+  background: #cfe0da;
+  color: #236476;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+
+.live-weather-error {
+  margin: 0 0 0.8rem;
+  padding: 0.6rem 0.9rem;
+  background: #fef3c7;
+  color: #b45309;
+  border-radius: 10px;
+  font-size: 0.9rem;
 }

@@ -1,5 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './AIGenerate.css';
+
+// Theatre — not real ML. Each line is shown for ~600ms to make the
+// generation feel like work is happening. Typewriter effect adds extra
+// authenticity (chars stream in instead of appearing instantly).
+const AI_GEN_STEPS = [
+  '> Analizuoju užklausą ir žanrų profilius…',
+  '> Generuoju siužeto branduolį…',
+  '> Renkuosi temą ir toną…',
+  '> Komponuoju pavadinimą…',
+  '> Užbaigiu metaduomenis…',
+];
 
 const genreProfiles = {
   'Veiksmo': { themes: ['kovos', 'gelbėjimo misija', 'persekiojimas'], tone: 'intensyvus' },
@@ -64,6 +75,21 @@ export default function AIGenerate() {
   const [loading, setLoading] = useState(false);
   const [showSurvey, setShowSurvey] = useState(false);
 
+  // Index of the current AI_GEN_STEPS line — drives both the visible step
+  // list and the typewriter animation below it. Reset to 0 when a new
+  // generation starts.
+  const [genStep, setGenStep] = useState(0);
+
+  useEffect(() => {
+    if (!loading) return;
+    const timer = setTimeout(() => {
+      if (genStep + 1 < AI_GEN_STEPS.length) {
+        setGenStep(genStep + 1);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [loading, genStep]);
+
   const preferenceOptions = [
     'Veiksmo', 'Drama', 'Komedija', 'Siaubo', 'Mokslinė fantastika',
     'Romantinis', 'Trileris', 'Dokumentinis', 'Animacinis', 'Kriminalinis'
@@ -78,12 +104,15 @@ export default function AIGenerate() {
   const generateFilm = () => {
     if (!prompt.trim()) return;
     setLoading(true);
+    setGenStep(0);
     setGeneratedFilm(null);
 
+    // Total ~3s — slightly longer than the step animation so the last
+    // line lingers a moment before the result reveals.
     setTimeout(() => {
       setGeneratedFilm(generateSmartFilm(prompt, preferences));
       setLoading(false);
-    }, 2500);
+    }, 3000);
   };
 
   return (
@@ -138,9 +167,56 @@ export default function AIGenerate() {
       </div>
 
       {loading && (
-        <div className="ai-loading">
-          <div className="ai-spinner"></div>
-          <p>DI analizuoja jūsų pageidavimus ir kuria filmą...</p>
+        <div className="ai-loading" role="status" aria-live="polite">
+          {/* Hand-rolled SVG bot — antenna ping + eye blink + chin gear
+              spin all driven by CSS animations on named groups. */}
+          <svg
+            className="ai-bot"
+            viewBox="0 0 120 120"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            {/* antenna */}
+            <line x1="60" y1="10" x2="60" y2="22" stroke="#3a79a6" strokeWidth="3" strokeLinecap="round" />
+            <circle className="ai-bot-antenna" cx="60" cy="8" r="4" fill="#ea580c" />
+            {/* head */}
+            <rect x="28" y="22" width="64" height="56" rx="14" fill="#ffffff" stroke="#3a79a6" strokeWidth="3" />
+            {/* eyes */}
+            <circle className="ai-bot-eye" cx="46" cy="46" r="6" fill="#3a79a6" />
+            <circle className="ai-bot-eye" cx="74" cy="46" r="6" fill="#3a79a6" />
+            {/* mouth */}
+            <rect x="44" y="62" width="32" height="6" rx="3" fill="#cfe0da" />
+            {/* gear */}
+            <g className="ai-bot-gear" style={{ transformOrigin: '60px 96px' }}>
+              <circle cx="60" cy="96" r="10" fill="none" stroke="#236476" strokeWidth="3" />
+              <circle cx="60" cy="96" r="3" fill="#236476" />
+              {[0, 60, 120, 180, 240, 300].map((deg) => (
+                <rect
+                  key={deg}
+                  x="58.5"
+                  y="82"
+                  width="3"
+                  height="5"
+                  rx="1"
+                  fill="#236476"
+                  transform={`rotate(${deg} 60 96)`}
+                />
+              ))}
+            </g>
+            {/* shoulders / arms */}
+            <line x1="20" y1="76" x2="28" y2="76" stroke="#3a79a6" strokeWidth="3" strokeLinecap="round" />
+            <line x1="92" y1="76" x2="100" y2="76" stroke="#3a79a6" strokeWidth="3" strokeLinecap="round" />
+          </svg>
+          <div className="ai-loading-steps">
+            {AI_GEN_STEPS.slice(0, genStep + 1).map((step, i) => (
+              <p
+                key={step}
+                className={i === genStep ? 'ai-step active' : 'ai-step done'}
+              >
+                {step}
+              </p>
+            ))}
+          </div>
         </div>
       )}
 
