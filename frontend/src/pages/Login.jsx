@@ -136,6 +136,7 @@ export default function Login() {
           <div className="auth-demo">
             <p><strong>Demo prisijungimai:</strong></p>
             <p>Admin: admin@filmuvercle.lt / admin</p>
+            <p>Moderatorius: mod@filmuvercle.lt / moderator</p>
             <p>Žiūrėtojas: ziuretojas@filmuvercle.lt / 12345678</p>
           </div>
         </div>
