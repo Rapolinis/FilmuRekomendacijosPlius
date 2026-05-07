@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useData } from '../context/DataContext';
 import { sha256 } from '../utils/hash';
 import './Auth.css';
+
+const API_BASE = 'http://localhost:5075/api';
 
 export default function Register() {
   const [username, setUsername] = useState('');
@@ -13,17 +14,29 @@ export default function Register() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [birthYear, setBirthYear] = useState('');
-  const [favoriteGenre, setFavoriteGenre] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
   const { login } = useAuth();
-  const { users, addUser } = useData();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    if (!username || !email || !password || !confirmPassword || !firstName || !lastName) {
+    const trimmedUsername = username.trim();
+    const trimmedEmail = email.trim().toLowerCase();
+    const trimmedFirstName = firstName.trim();
+    const trimmedLastName = lastName.trim();
+
+    if (
+      !trimmedUsername ||
+      !trimmedEmail ||
+      !password ||
+      !confirmPassword ||
+      !trimmedFirstName ||
+      !trimmedLastName
+    ) {
       setError('Prašome užpildyti visus privalomus laukus.');
       return;
     }
@@ -38,55 +51,56 @@ export default function Register() {
       return;
     }
 
-    if (users.find(u => u.email === email)) {
-      setError('Šis el. paštas jau užregistruotas.');
-      return;
+    try {
+      setLoading(true);
+
+      const hashedPassword = await sha256(password);
+
+      const response = await fetch(`${API_BASE}/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: trimmedUsername,
+          email: trimmedEmail,
+          password: hashedPassword,
+          firstName: trimmedFirstName,
+          lastName: trimmedLastName,
+          birthYear: birthYear || null,
+          role: 'viewer',
+          avatar: '',
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'Registracija nepavyko.');
+        return;
+      }
+
+      login({
+        id: data.id,
+        username: data.username,
+        email: data.email,
+        role: data.role,
+        avatar: data.avatar,
+      });
+
+      navigate('/movies');
+    } catch (err) {
+      setError('Nepavyko prisijungti prie serverio.');
+    } finally {
+      setLoading(false);
     }
-
-    if (users.find(u => u.username === username)) {
-      setError('Šis vartotojo vardas jau užimtas.');
-      return;
-    }
-
-    const hashedPassword = await sha256(password);
-    const newUser = addUser({
-      username,
-      email,
-      password: hashedPassword,
-      firstName,
-      lastName,
-      birthYear: birthYear || null,
-      favoriteGenre: favoriteGenre || null,
-      role: 'viewer',
-      avatar: '',
-      blocked: false,
-      blockedReason: '',
-      blockedUntil: null,
-      createdAt: new Date().toISOString().split('T')[0]
-    });
-
-    login({
-      id: newUser.id,
-      username: newUser.username,
-      email: newUser.email,
-      role: newUser.role,
-      avatar: newUser.avatar
-    });
-    navigate('/movies');
   };
-
-  const genres = [
-    'Veiksmo', 'Komedija', 'Drama', 'Siaubo', 'Trileris',
-    'Fantastika', 'Animacija', 'Romantika', 'Dokumentinis', 'Istorinis'
-  ];
 
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 80 }, (_, i) => currentYear - 10 - i);
 
   return (
     <div className="auth-page">
-
-      {/* Left Column: Cinematic Visual */}
       <section className="auth-visual">
         <div className="auth-visual__bg">
           <img
@@ -119,15 +133,15 @@ export default function Register() {
                 />
               ))}
             </div>
-            <span className="auth-visual__count">Prisijunkite prie 10,000+ narių</span>
+            <span className="auth-visual__count">
+              Prisijunkite prie 10,000+ narių
+            </span>
           </div>
         </div>
       </section>
 
-      {/* Right Column: Registration Form */}
       <section className="auth-card" style={{ overflowY: 'auto' }}>
         <div className="auth-card__inner">
-
           <div className="auth-header">
             <h1>Sukurti paskyrą</h1>
             <p>Užpildykite formą ir pradėkite žiūrėti.</p>
@@ -136,8 +150,6 @@ export default function Register() {
           {error && <div className="error-message">{error}</div>}
 
           <form onSubmit={handleSubmit}>
-
-            {/* Name row */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               <div className="form-group">
                 <label htmlFor="firstName">Vardas *</label>
@@ -147,8 +159,10 @@ export default function Register() {
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   placeholder="Vardenis"
+                  autoComplete="given-name"
                 />
               </div>
+
               <div className="form-group">
                 <label htmlFor="lastName">Pavardė *</label>
                 <input
@@ -157,6 +171,7 @@ export default function Register() {
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   placeholder="Pavardenis"
+                  autoComplete="family-name"
                 />
               </div>
             </div>
@@ -169,6 +184,7 @@ export default function Register() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="kino_megejas"
+                autoComplete="username"
               />
             </div>
 
@@ -180,11 +196,11 @@ export default function Register() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="vardas@pavyzdys.lt"
+                autoComplete="email"
               />
             </div>
 
-            {/* Birth year + genre row */}
-            <div style={{ display: 'grid'}}>
+            <div style={{ display: 'grid' }}>
               <div className="form-group">
                 <label htmlFor="birthYear">Gimimo metai</label>
                 <select
@@ -195,13 +211,14 @@ export default function Register() {
                 >
                   <option value="">Pasirinkite</option>
                   {years.map(y => (
-                    <option key={y} value={y}>{y}</option>
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
                   ))}
                 </select>
               </div>
             </div>
 
-            {/* Password row */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               <div className="form-group">
                 <label htmlFor="password">Slaptažodis *</label>
@@ -211,8 +228,10 @@ export default function Register() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Bent 6 simboliai"
+                  autoComplete="new-password"
                 />
               </div>
+
               <div className="form-group">
                 <label htmlFor="confirmPassword">Pakartokite *</label>
                 <input
@@ -221,12 +240,13 @@ export default function Register() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
+                  autoComplete="new-password"
                 />
               </div>
             </div>
 
-            <button type="submit" className="btn-primary">
-              Pradėti kelionę
+            <button type="submit" className="btn-primary" disabled={loading}>
+              {loading ? 'Kuriama paskyra...' : 'Pradėti kelionę'}
             </button>
           </form>
 
@@ -243,7 +263,6 @@ export default function Register() {
           </div>
         </footer>
       </section>
-
     </div>
   );
 }

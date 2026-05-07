@@ -41,17 +41,17 @@
 
 .mood-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 0.8rem;
 }
 
 .mood-btn {
-  padding: 1.1rem 1rem;
+  padding: 1rem;
   border: 2px solid #e2e8f0;
   border-radius: 14px;
   background: #fff;
   cursor: pointer;
-  font-size: 1.5rem;
+  font-size: 1.05rem;
   font-weight: 600;
   line-height: 1.25;
   transition: all 0.2s;
@@ -146,6 +146,7 @@
   color: #718096;
   margin-bottom: 1.5rem;
 }
+
 .moon-phases {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -157,7 +158,39 @@
   box-shadow: 0 0 18px rgba(250, 204, 21, 0.55);
   transform: scale(1.03);
 }
-/* ── Multi-step loading sequence ─────────────────────────────────────── */
+
+/* Papildomi kriterijai */
+.extra-criteria-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.extra-criteria-column {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1rem;
+}
+
+.extra-criteria-column h4 {
+  margin: 0 0 0.8rem;
+  color: #236476;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.extra-criteria-column .mood-grid {
+  grid-template-columns: 1fr;
+}
+
+.extra-criteria-column .mood-btn {
+  font-size: 0.95rem;
+  padding: 0.9rem;
+}
+
+/* Loading */
 .rec-loading {
   margin-top: 2rem;
   padding: 2rem;
@@ -183,7 +216,9 @@
 }
 
 @keyframes rec-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .rec-loading-steps {
@@ -229,4 +264,28 @@
   color: #b45309;
   border-radius: 10px;
   font-size: 0.9rem;
+}
+
+@media (max-width: 900px) {
+  .extra-criteria-row {
+    grid-template-columns: 1fr;
+  }
+
+  .mood-btn {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .recommendation-page {
+    padding: 1rem;
+  }
+
+  .condition-card {
+    min-width: 100%;
+  }
+
+  .rec-loading {
+    flex-direction: column;
+  }
 }

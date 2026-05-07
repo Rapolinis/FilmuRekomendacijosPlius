@@ -1,240 +1,394 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import initialMovies from '../data/movies.json';
-import initialUsers from '../data/users.json';
-import initialGenres from '../data/genres.json';
-import initialCategories from '../data/categories.json';
-import initialViewings from '../data/viewings.json';
-import initialWatchlists from '../data/watchlists.json';
-import { loadFromStorage, saveToStorage } from '../utils/storage';
 
 const DataContext = createContext(null);
 
-const API_BASE = 'http://localhost:5075';
+const API_BASE = 'http://localhost:5075/api';
 
-function usePersistedState(key, fallback) {
-  const [state, setState] = useState(() => loadFromStorage(key, fallback));
+async function apiRequest(path, options = {}) {
+  const response = await fetch(`${API_BASE}${path}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...(options.headers || {}),
+    },
+    ...options,
+  });
 
-  useEffect(() => {
-    saveToStorage(key, state);
-  }, [key, state]);
+  const data = await response.json().catch(() => null);
 
-  return [state, setState];
+  if (!response.ok) {
+    throw new Error(data?.error || 'API klaida');
+  }
+
+  return data;
 }
 
 export function DataProvider({ children }) {
-  // Movies are fetched from the MySQL backend
   const [movies, setMovies] = useState([]);
-  const [moviesLoading, setMoviesLoading] = useState(true);
+  const [users, setUsers] = useState([]);
+  const [genres, setGenres] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [viewings, setViewings] = useState([]);
+  const [watchlists, setWatchlists] = useState([]);
 
-  useEffect(() => {
-    fetch(`${API_BASE}/api/movies`)
-      .then(res => {
-        if (!res.ok) throw new Error('API unavailable');
-        return res.json();
-      })
-      .then(data => {
-        setMovies(data);
-        setMoviesLoading(false);
-      })
-      .catch(() => {
-        // Fallback to local JSON if backend is not running
-        setMovies(loadFromStorage('movies', initialMovies));
-        setMoviesLoading(false);
-      });
+  const [moviesLoading, setMoviesLoading] = useState(true);
+  const [usersLoading, setUsersLoading] = useState(true);
+  const [genresLoading, setGenresLoading] = useState(true);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [viewingsLoading, setViewingsLoading] = useState(true);
+  const [watchlistsLoading, setWatchlistsLoading] = useState(true);
+
+  const refreshMovies = useCallback(async () => {
+    setMoviesLoading(true);
+    try {
+      const data = await apiRequest('/movies');
+      setMovies(data);
+    } finally {
+      setMoviesLoading(false);
+    }
   }, []);
 
-  const [users, setUsers] = usePersistedState('users', initialUsers);
-  const [genres, setGenres] = usePersistedState('genres', initialGenres);
-  const [categories, setCategories] = usePersistedState('categories', initialCategories);
-  const [viewings, setViewings] = usePersistedState('viewings', initialViewings);
-  const [watchlists, setWatchlists] = usePersistedState('watchlists', initialWatchlists);
-  const [userRatings, setUserRatings] = usePersistedState('userRatings', {});
-  // userRatings: { "userId_movieId": rating }
+  const refreshUsers = useCallback(async () => {
+    setUsersLoading(true);
+    try {
+      const data = await apiRequest('/users');
+      setUsers(data);
+    } finally {
+      setUsersLoading(false);
+    }
+  }, []);
+
+  const refreshGenres = useCallback(async () => {
+    setGenresLoading(true);
+    try {
+      const data = await apiRequest('/genres');
+      setGenres(data);
+    } finally {
+      setGenresLoading(false);
+    }
+  }, []);
+
+  const refreshCategories = useCallback(async () => {
+    setCategoriesLoading(true);
+    try {
+      const data = await apiRequest('/categories');
+      setCategories(data);
+    } finally {
+      setCategoriesLoading(false);
+    }
+  }, []);
+
+  const refreshViewings = useCallback(async () => {
+    setViewingsLoading(true);
+    try {
+      const data = await apiRequest('/viewings');
+      setViewings(data);
+    } finally {
+      setViewingsLoading(false);
+    }
+  }, []);
+
+  const refreshWatchlists = useCallback(async () => {
+    setWatchlistsLoading(true);
+    try {
+      const data = await apiRequest('/watchlists');
+      setWatchlists(data);
+    } finally {
+      setWatchlistsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshMovies().catch(console.error);
+    refreshUsers().catch(console.error);
+    refreshGenres().catch(console.error);
+    refreshCategories().catch(console.error);
+    refreshViewings().catch(console.error);
+    refreshWatchlists().catch(console.error);
+  }, [
+    refreshMovies,
+    refreshUsers,
+    refreshGenres,
+    refreshCategories,
+    refreshViewings,
+    refreshWatchlists,
+  ]);
 
   // --- Movies ---
-  const addMovie = useCallback((movie) => {
-    let newMovie;
-    setMovies(prev => {
-      const id = Math.max(0, ...prev.map(m => m.id)) + 1;
-      newMovie = { ...movie, id };
-      return [...prev, newMovie];
+  const addMovie = useCallback(async (movie) => {
+    const newMovie = await apiRequest('/movies', {
+      method: 'POST',
+      body: JSON.stringify(movie),
     });
+
+    setMovies(prev => [...prev, newMovie]);
     return newMovie;
-  }, [setMovies]);
+  }, []);
 
-  const updateMovie = useCallback((id, updates) => {
-    setMovies(prev => prev.map(m => m.id === id ? { ...m, ...updates } : m));
-  }, [setMovies]);
+  const updateMovie = useCallback(async (id, updates) => {
+    const updatedMovie = await apiRequest(`/movies/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
 
-  const deleteMovie = useCallback((id) => {
+    setMovies(prev => prev.map(m => m.id === id ? updatedMovie : m));
+    return updatedMovie;
+  }, []);
+
+  const deleteMovie = useCallback(async (id) => {
+    await apiRequest(`/movies/${id}`, {
+      method: 'DELETE',
+    });
+
     setMovies(prev => prev.filter(m => m.id !== id));
-  }, [setMovies]);
+  }, []);
 
-  const addComment = useCallback((movieId, comment) => {
+  const addComment = useCallback(async (movieId, comment) => {
+    const newComment = await apiRequest(`/movies/${movieId}/comments`, {
+      method: 'POST',
+      body: JSON.stringify(comment),
+    });
+
     setMovies(prev => prev.map(m =>
       m.id === movieId
-        ? { ...m, comments: [...(m.comments || []), comment] }
+        ? { ...m, comments: [...(m.comments || []), newComment] }
         : m
     ));
-  }, [setMovies]);
 
-  const editComment = useCallback((movieId, commentIndex, newText) => {
+    return newComment;
+  }, []);
+
+  const editComment = useCallback(async (movieId, commentId, newText) => {
+    const updatedComment = await apiRequest(`/comments/${commentId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ text: newText }),
+    });
+
     setMovies(prev => prev.map(m =>
       m.id === movieId
         ? {
-          ...m,
-          comments: (m.comments || []).map((c, i) =>
-            i === commentIndex ? { ...c, text: newText, edited: true } : c
-          )
-        }
+            ...m,
+            comments: (m.comments || []).map(c =>
+              c.id === commentId ? updatedComment : c
+            ),
+          }
         : m
     ));
-  }, [setMovies]);
 
-  const deleteComment = useCallback((movieId, commentIndex) => {
+    return updatedComment;
+  }, []);
+
+  const deleteComment = useCallback(async (movieId, commentId) => {
+    await apiRequest(`/comments/${commentId}`, {
+      method: 'DELETE',
+    });
+
     setMovies(prev => prev.map(m =>
       m.id === movieId
-        ? { ...m, comments: (m.comments || []).filter((_, i) => i !== commentIndex) }
+        ? { ...m, comments: (m.comments || []).filter(c => c.id !== commentId) }
         : m
     ));
-  }, [setMovies]);
+  }, []);
 
-  const rateMovie = useCallback((movieId, userId, rating) => {
-    const key = `${userId}_${movieId}`;
-    // Enforce: prevent duplicate ratings at data layer
-    setUserRatings(prev => {
-      if (prev[key]) return prev; // Already rated, do nothing
-      return { ...prev, [key]: rating };
+  const rateMovie = useCallback(async (movieId, userId, rating) => {
+    const updatedMovie = await apiRequest(`/movies/${movieId}/ratings`, {
+      method: 'POST',
+      body: JSON.stringify({ userId, rating }),
     });
-    setMovies(prev => prev.map(m => {
-      if (m.id !== movieId) return m;
-      // Double-check not already counted (belt and suspenders)
-      const newRatings = [...(m.ratings || []), rating];
-      return {
-        ...m,
-        ratings: newRatings,
-        rating: Number((newRatings.reduce((a, b) => a + b, 0) / newRatings.length).toFixed(1))
-      };
-    }));
-  }, [setMovies, setUserRatings]);
+
+    setMovies(prev => prev.map(m => m.id === movieId ? updatedMovie : m));
+    return updatedMovie;
+  }, []);
 
   const hasUserRated = useCallback((userId, movieId) => {
-    return !!userRatings[`${userId}_${movieId}`];
-  }, [userRatings]);
+    const movie = movies.find(m => m.id === movieId);
+
+    if (!movie) return false;
+
+    return (movie.userRatings || []).some(r => r.userId === userId);
+  }, [movies]);
 
   // --- Users ---
-  const addUser = useCallback((user) => {
-    let newUser;
-    setUsers(prev => {
-      const id = Math.max(0, ...prev.map(u => u.id)) + 1;
-      newUser = { ...user, id };
-      return [...prev, newUser];
+  const addUser = useCallback(async (user) => {
+    const newUser = await apiRequest('/users', {
+      method: 'POST',
+      body: JSON.stringify(user),
     });
+
+    setUsers(prev => [...prev, newUser]);
     return newUser;
-  }, [setUsers]);
+  }, []);
 
-  const updateUser = useCallback((id, updates) => {
-    setUsers(prev => prev.map(u => u.id === id ? { ...u, ...updates } : u));
-  }, [setUsers]);
+  const updateUser = useCallback(async (id, updates) => {
+    const updatedUser = await apiRequest(`/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
 
-  const blockUser = useCallback((id, reason, until) => {
-    setUsers(prev => prev.map(u =>
-      u.id === id ? { ...u, blocked: true, blockedReason: reason, blockedUntil: until } : u
-    ));
-  }, [setUsers]);
+    setUsers(prev => prev.map(u => u.id === id ? updatedUser : u));
+    return updatedUser;
+  }, []);
 
-  const unblockUser = useCallback((id) => {
-    setUsers(prev => prev.map(u =>
-      u.id === id ? { ...u, blocked: false, blockedReason: '', blockedUntil: null } : u
-    ));
-  }, [setUsers]);
+  const blockUser = useCallback(async (id, reason, until) => {
+    const updatedUser = await apiRequest(`/users/${id}/block`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        blockedReason: reason,
+        blockedUntil: until,
+      }),
+    });
 
-  const deleteUser = useCallback((id) => {
+    setUsers(prev => prev.map(u => u.id === id ? updatedUser : u));
+    return updatedUser;
+  }, []);
+
+  const unblockUser = useCallback(async (id) => {
+    const updatedUser = await apiRequest(`/users/${id}/unblock`, {
+      method: 'PATCH',
+    });
+
+    setUsers(prev => prev.map(u => u.id === id ? updatedUser : u));
+    return updatedUser;
+  }, []);
+
+  const deleteUser = useCallback(async (id) => {
+    await apiRequest(`/users/${id}`, {
+      method: 'DELETE',
+    });
+
     setUsers(prev => prev.filter(u => u.id !== id));
-  }, [setUsers]);
+  }, []);
 
-  const changeUserRole = useCallback((id, newRole) => {
-    setUsers(prev => prev.map(u => u.id === id ? { ...u, role: newRole } : u));
-  }, [setUsers]);
+  const changeUserRole = useCallback(async (id, newRole) => {
+    const updatedUser = await apiRequest(`/users/${id}/role`, {
+      method: 'PATCH',
+      body: JSON.stringify({ role: newRole }),
+    });
+
+    setUsers(prev => prev.map(u => u.id === id ? updatedUser : u));
+    return updatedUser;
+  }, []);
 
   // --- Genres ---
-  const addGenre = useCallback((name) => {
-    setGenres(prev => {
-      const id = Math.max(0, ...prev.map(g => g.id)) + 1;
-      return [...prev, { id, name }];
+  const addGenre = useCallback(async (name) => {
+    const newGenre = await apiRequest('/genres', {
+      method: 'POST',
+      body: JSON.stringify({ name }),
     });
-  }, [setGenres]);
 
-  const updateGenre = useCallback((id, name) => {
-    setGenres(prev => prev.map(g => g.id === id ? { ...g, name } : g));
-  }, [setGenres]);
+    setGenres(prev => [...prev, newGenre]);
+    return newGenre;
+  }, []);
 
-  const deleteGenre = useCallback((id) => {
+  const updateGenre = useCallback(async (id, name) => {
+    const updatedGenre = await apiRequest(`/genres/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ name }),
+    });
+
+    setGenres(prev => prev.map(g => g.id === id ? updatedGenre : g));
+    return updatedGenre;
+  }, []);
+
+  const deleteGenre = useCallback(async (id) => {
+    await apiRequest(`/genres/${id}`, {
+      method: 'DELETE',
+    });
+
     setGenres(prev => prev.filter(g => g.id !== id));
-  }, [setGenres]);
+  }, []);
 
   // --- Categories ---
-  const addCategory = useCallback((name) => {
-    setCategories(prev => {
-      const id = Math.max(0, ...prev.map(c => c.id)) + 1;
-      return [...prev, { id, name }];
+  const addCategory = useCallback(async (name) => {
+    const newCategory = await apiRequest('/categories', {
+      method: 'POST',
+      body: JSON.stringify({ name }),
     });
-  }, [setCategories]);
 
-  const updateCategory = useCallback((id, name) => {
-    setCategories(prev => prev.map(c => c.id === id ? { ...c, name } : c));
-  }, [setCategories]);
+    setCategories(prev => [...prev, newCategory]);
+    return newCategory;
+  }, []);
 
-  const deleteCategory = useCallback((id) => {
+  const updateCategory = useCallback(async (id, name) => {
+    const updatedCategory = await apiRequest(`/categories/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ name }),
+    });
+
+    setCategories(prev => prev.map(c => c.id === id ? updatedCategory : c));
+    return updatedCategory;
+  }, []);
+
+  const deleteCategory = useCallback(async (id) => {
+    await apiRequest(`/categories/${id}`, {
+      method: 'DELETE',
+    });
+
     setCategories(prev => prev.filter(c => c.id !== id));
-  }, [setCategories]);
+  }, []);
 
   // --- Viewings ---
-  const addViewing = useCallback((viewing) => {
-    let newViewing;
-    setViewings(prev => {
-      const id = Math.max(0, ...prev.map(v => v.id)) + 1;
-      newViewing = { ...viewing, id };
-      return [...prev, newViewing];
+  const addViewing = useCallback(async (viewing) => {
+    const newViewing = await apiRequest('/viewings', {
+      method: 'POST',
+      body: JSON.stringify(viewing),
     });
+
+    setViewings(prev => [...prev, newViewing]);
     return newViewing;
-  }, [setViewings]);
+  }, []);
 
-  const registerForViewing = useCallback((viewingId, userId) => {
-    setViewings(prev => prev.map(v =>
-      v.id === viewingId && !v.participants.includes(userId) && v.participants.length < v.maxParticipants
-        ? { ...v, participants: [...v.participants, userId] }
-        : v
-    ));
-  }, [setViewings]);
+  const registerForViewing = useCallback(async (viewingId, userId) => {
+    const updatedViewing = await apiRequest(`/viewings/${viewingId}/register`, {
+      method: 'POST',
+      body: JSON.stringify({ userId }),
+    });
 
-  const unregisterFromViewing = useCallback((viewingId, userId) => {
-    setViewings(prev => prev.map(v =>
-      v.id === viewingId
-        ? { ...v, participants: v.participants.filter(p => p !== userId) }
-        : v
-    ));
-  }, [setViewings]);
+    setViewings(prev => prev.map(v => v.id === viewingId ? updatedViewing : v));
+    return updatedViewing;
+  }, []);
+
+  const unregisterFromViewing = useCallback(async (viewingId, userId) => {
+    const updatedViewing = await apiRequest(`/viewings/${viewingId}/unregister`, {
+      method: 'POST',
+      body: JSON.stringify({ userId }),
+    });
+
+    setViewings(prev => prev.map(v => v.id === viewingId ? updatedViewing : v));
+    return updatedViewing;
+  }, []);
 
   // --- Watchlist ---
-  const addToWatchlist = useCallback((userId, movieId) => {
+  const addToWatchlist = useCallback(async (userId, movieId) => {
+    const updatedWatchlist = await apiRequest('/watchlists', {
+      method: 'POST',
+      body: JSON.stringify({ userId, movieId }),
+    });
+
     setWatchlists(prev => {
       const existing = prev.find(w => w.userId === userId);
-      if (existing) {
-        if (existing.movieIds.includes(movieId)) return prev;
-        return prev.map(w =>
-          w.userId === userId ? { ...w, movieIds: [...w.movieIds, movieId] } : w
-        );
-      }
-      return [...prev, { userId, movieIds: [movieId] }];
-    });
-  }, [setWatchlists]);
 
-  const removeFromWatchlist = useCallback((userId, movieId) => {
+      if (existing) {
+        return prev.map(w => w.userId === userId ? updatedWatchlist : w);
+      }
+
+      return [...prev, updatedWatchlist];
+    });
+
+    return updatedWatchlist;
+  }, []);
+
+  const removeFromWatchlist = useCallback(async (userId, movieId) => {
+    const updatedWatchlist = await apiRequest('/watchlists/remove', {
+      method: 'POST',
+      body: JSON.stringify({ userId, movieId }),
+    });
+
     setWatchlists(prev => prev.map(w =>
-      w.userId === userId ? { ...w, movieIds: w.movieIds.filter(id => id !== movieId) } : w
+      w.userId === userId ? updatedWatchlist : w
     ));
-  }, [setWatchlists]);
+
+    return updatedWatchlist;
+  }, []);
 
   const getUserWatchlist = useCallback((userId) => {
     const wl = watchlists.find(w => w.userId === userId);
@@ -242,15 +396,61 @@ export function DataProvider({ children }) {
   }, [watchlists]);
 
   return (
-    <DataContext.Provider value={{
-      movies, moviesLoading,
-      addMovie, updateMovie, deleteMovie, addComment, editComment, deleteComment, rateMovie, hasUserRated,
-      users, addUser, updateUser, blockUser, unblockUser, deleteUser, changeUserRole,
-      genres, addGenre, updateGenre, deleteGenre,
-      categories, addCategory, updateCategory, deleteCategory,
-      viewings, addViewing, registerForViewing, unregisterFromViewing,
-      watchlists, addToWatchlist, removeFromWatchlist, getUserWatchlist
-    }}>
+    <DataContext.Provider
+      value={{
+        movies,
+        moviesLoading,
+        users,
+        usersLoading,
+        genres,
+        genresLoading,
+        categories,
+        categoriesLoading,
+        viewings,
+        viewingsLoading,
+        watchlists,
+        watchlistsLoading,
+
+        refreshMovies,
+        refreshUsers,
+        refreshGenres,
+        refreshCategories,
+        refreshViewings,
+        refreshWatchlists,
+
+        addMovie,
+        updateMovie,
+        deleteMovie,
+        addComment,
+        editComment,
+        deleteComment,
+        rateMovie,
+        hasUserRated,
+
+        addUser,
+        updateUser,
+        blockUser,
+        unblockUser,
+        deleteUser,
+        changeUserRole,
+
+        addGenre,
+        updateGenre,
+        deleteGenre,
+
+        addCategory,
+        updateCategory,
+        deleteCategory,
+
+        addViewing,
+        registerForViewing,
+        unregisterFromViewing,
+
+        addToWatchlist,
+        removeFromWatchlist,
+        getUserWatchlist,
+      }}
+    >
       {children}
     </DataContext.Provider>
   );
@@ -258,6 +458,10 @@ export function DataProvider({ children }) {
 
 export function useData() {
   const context = useContext(DataContext);
-  if (!context) throw new Error('useData must be used within DataProvider');
+
+  if (!context) {
+    throw new Error('useData must be used within DataProvider');
+  }
+
   return context;
 }
