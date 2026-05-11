@@ -7,8 +7,6 @@ bin/
 obj/
 .vs/
 
-# Environment / secrets
-backend/appsettings.Development.json
 
 # Logs
 *.log
