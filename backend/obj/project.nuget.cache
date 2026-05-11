@@ -1,13 +1,15 @@
 {
   "version": 2,
-  "dgSpecHash": "uVn6hTFR6M8=",
+  "dgSpecHash": "2LvrcHCmXsI=",
   "success": true,
-  "projectFilePath": "C:\\Users\\rapvis\\filmurekomendacijosplius\\backend\\backend.csproj",
+  "projectFilePath": "C:\\Users\\inzinierius15\\FilmuRekomendacijosPlius\\backend\\backend.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\rapvis\\.nuget\\packages\\dapper\\2.1.66\\dapper.2.1.66.nupkg.sha512",
-    "C:\\Users\\rapvis\\.nuget\\packages\\microsoft.aspnetcore.openapi\\10.0.3\\microsoft.aspnetcore.openapi.10.0.3.nupkg.sha512",
-    "C:\\Users\\rapvis\\.nuget\\packages\\microsoft.openapi\\2.0.0\\microsoft.openapi.2.0.0.nupkg.sha512",
-    "C:\\Users\\rapvis\\.nuget\\packages\\mysqlconnector\\2.4.0\\mysqlconnector.2.4.0.nupkg.sha512"
+    "C:\\Users\\inzinierius15\\.nuget\\packages\\dapper\\2.1.72\\dapper.2.1.72.nupkg.sha512",
+    "C:\\Users\\inzinierius15\\.nuget\\packages\\microsoft.aspnetcore.openapi\\9.0.0\\microsoft.aspnetcore.openapi.9.0.0.nupkg.sha512",
+    "C:\\Users\\inzinierius15\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\8.0.2\\microsoft.extensions.dependencyinjection.abstractions.8.0.2.nupkg.sha512",
+    "C:\\Users\\inzinierius15\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\8.0.2\\microsoft.extensions.logging.abstractions.8.0.2.nupkg.sha512",
+    "C:\\Users\\inzinierius15\\.nuget\\packages\\microsoft.openapi\\1.6.17\\microsoft.openapi.1.6.17.nupkg.sha512",
+    "C:\\Users\\inzinierius15\\.nuget\\packages\\mysqlconnector\\2.5.0\\mysqlconnector.2.5.0.nupkg.sha512"
   ],
   "logs": []
 }

@@ -4,9 +4,6 @@ import MovieCard from '../components/MovieCard';
 import { getMoonPhase } from '../utils/helpers';
 import './Recommendation.css';
 
-// Multi-step "thinking" sequence shown while we compute recommendations.
-// Each step is intentionally short — total ~2.5s — so users feel the app
-// is working but never wait awkwardly long. Pure theatre, no real I/O.
 const LOADING_STEPS = [
   '🎭 Analizuojam tavo nuotaiką…',
   '🐶 Lyginam su augintinių pomėgiais…',
@@ -20,57 +17,10 @@ export default function Recommendation() {
 
   const [mood, setMood] = useState('');
   const [weather, setWeather] = useState('');
-  // Live weather state — populated by OpenWeatherMap if VITE_OWM_API_KEY
-  // is set in the environment. When unset (or fetch fails) the field
-  // stays null and the user is asked to pick weather manually below.
   const [liveWeather, setLiveWeather] = useState(null);
   const [liveWeatherError, setLiveWeatherError] = useState(null);
-
-  useEffect(() => {
-    const apiKey = import.meta.env.VITE_OWM_API_KEY;
-    if (!apiKey) return;
-
-    // Vilnius coords as the default location — the app's market is
-    // Lithuania-wide but most users are in or near the capital. A future
-    // iteration could prompt for geolocation; for now this is enough to
-    // demo the live data path.
-    const url = `https://api.openweathermap.org/data/2.5/weather?lat=54.687&lon=25.279&units=metric&appid=${apiKey}`;
-    let cancelled = false;
-    fetch(url)
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error('weather-fetch-failed'))))
-      .then((data) => {
-        if (cancelled) return;
-        const main = (data?.weather?.[0]?.main || '').toLowerCase();
-        // Map OWM's `main` field to our existing weather option keys
-        // so the recommendation engine doesn't need to learn a second
-        // vocabulary. Anything we can't classify falls back to debesuota.
-        let mapped = 'debesuota';
-        if (main.includes('clear')) mapped = 'sauleta';
-        else if (main.includes('rain') || main.includes('drizzle')) mapped = 'lietinga';
-        else if (main.includes('snow')) mapped = 'snieginga';
-        else if (main.includes('thunder')) mapped = 'audra';
-        else if (main.includes('cloud')) mapped = 'debesuota';
-        setLiveWeather({
-          mapped,
-          temp: Math.round(data?.main?.temp ?? 0),
-          description: data?.weather?.[0]?.description ?? '',
-          city: data?.name ?? 'Vilnius',
-        });
-        setWeather(mapped);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setLiveWeatherError('Nepavyko gauti orų — pasirinkite rankiniu būdu.');
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
   const [shoeSize, setShoeSize] = useState(42);
   const [zodiac, setZodiac] = useState('');
-  // Pets is multi-select — user can pick any combination (e.g. "Šuo + Katė")
-  // and the recommendation engine unions the genre hints from each pick.
   const [pets, setPets] = useState([]);
   const [extraCriteria, setExtraCriteria] = useState({
     duration: '',
@@ -78,18 +28,51 @@ export default function Recommendation() {
     rating: '',
   });
   const [showResults, setShowResults] = useState(false);
-
-  // `loadingStep` is null when idle, otherwise the index of the current
-  // message in LOADING_STEPS. We advance it on a timer; when it goes past
-  // the last step we surface the results.
   const [loadingStep, setLoadingStep] = useState(null);
 
   useEffect(() => {
+    const apiKey = import.meta.env.VITE_OWM_API_KEY;
+    if (!apiKey) return;
+
+    const url = `https://api.openweathermap.org/data/2.5/weather?lat=54.687&lon=25.279&units=metric&appid=${apiKey}`;
+    let cancelled = false;
+
+    fetch(url)
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error('weather-fetch-failed'))))
+      .then((data) => {
+        if (cancelled) return;
+
+        const main = (data?.weather?.[0]?.main || '').toLowerCase();
+
+        let mapped = 'debesuota';
+        if (main.includes('clear')) mapped = 'sauleta';
+        else if (main.includes('rain') || main.includes('drizzle')) mapped = 'lietinga';
+        else if (main.includes('snow')) mapped = 'snieginga';
+        else if (main.includes('thunder')) mapped = 'audra';
+        else if (main.includes('cloud')) mapped = 'debesuota';
+
+        setLiveWeather({
+          mapped,
+          temp: Math.round(data?.main?.temp ?? 0),
+          description: data?.weather?.[0]?.description ?? '',
+          city: data?.name ?? 'Vilnius',
+        });
+
+        setWeather(mapped);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setLiveWeatherError('Nepavyko gauti orų — pasirinkite rankiniu būdu.');
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
     if (loadingStep === null) return;
-    // The timer always advances; once we step past the last message we
-    // commit to results in the same callback. Setting state inside a
-    // timer (rather than synchronously in the effect body) keeps React's
-    // strict effects happy.
+
     const timer = setTimeout(() => {
       if (loadingStep + 1 >= LOADING_STEPS.length) {
         setShowResults(true);
@@ -98,6 +81,7 @@ export default function Recommendation() {
         setLoadingStep(loadingStep + 1);
       }
     }, 500);
+
     return () => clearTimeout(timer);
   }, [loadingStep]);
 
@@ -268,9 +252,6 @@ export default function Recommendation() {
       }
     }
 
-    // Union genre hints across all selected pets — broadens the match set
-    // rather than narrowing it. "Neturiu" carries no genres, so picking it
-    // alongside another pet is a no-op for the filter.
     const petGenres = pets
       .map((value) => petOptions.find((p) => p.value === value))
       .filter(Boolean)
@@ -278,7 +259,7 @@ export default function Recommendation() {
 
     if (petGenres.length > 0) {
       const petFiltered = filtered.filter((movie) =>
-        (movie.genre || []).some((genre) => petGenres.includes(genre)),
+        (movie.genre || []).some((genre) => petGenres.includes(genre))
       );
 
       if (petFiltered.length > 0) {
@@ -286,10 +267,33 @@ export default function Recommendation() {
       }
     }
 
-    // ── Extra criteria ──────────────────────────────────────────────
-    // Each extra criteria column is single-select. Multiple selected
-    // columns are combined into one ranking score so, for example, a user
-    // can prefer short + new + highest IMDb at the same time.
+    // Tikri filtrai pagal papildomus kriterijus
+    if (extraCriteria.duration === 'trumpas') {
+      filtered = filtered.filter(movie => movie.duration < 120);
+    }
+
+    if (extraCriteria.duration === 'ilgas') {
+      filtered = filtered.filter(movie => movie.duration > 150);
+    }
+
+    if (extraCriteria.duration === 'apie2val') {
+      filtered = filtered.filter(movie =>
+        movie.duration >= 105 && movie.duration <= 135
+      );
+    }
+
+    if (extraCriteria.date === 'naujas') {
+      filtered = filtered.filter(movie =>
+        new Date(movie.releaseDate).getFullYear() > 2010
+      );
+    }
+
+    if (extraCriteria.date === 'klasika') {
+      filtered = filtered.filter(movie =>
+        new Date(movie.releaseDate).getFullYear() < 2000
+      );
+    }
+
     const scoreCriterion = (movie, criterion) => {
       const duration = movie.duration ?? 0;
       const year = new Date(movie.releaseDate).getFullYear() || 0;
@@ -297,11 +301,8 @@ export default function Recommendation() {
 
       switch (criterion) {
         case 'apie2val':
-          // 120 min is the sweet spot. Penalise distance from 2 hours so
-          // 100min and 140min movies still rank but ~120 wins.
           return -Math.abs(duration - 120);
         case 'trumpas':
-          // Prefer shorter — but still rank longer ones, just lower.
           return duration < 120 ? 1000 - duration : -duration;
         case 'ilgas':
           return duration > 150 ? 1000 + duration : duration;
@@ -320,25 +321,51 @@ export default function Recommendation() {
 
     const scoreFor = (movie) => {
       if (selectedExtraCriteria.length === 0) {
-        // No explicit extra criterion → mild ~2hr bias as a tiebreaker.
-        // Keeps the historical ordering while nudging the average match
-        // toward feature-length films.
         return -Math.abs((movie.duration ?? 0) - 120) * 0.1;
       }
 
       return selectedExtraCriteria.reduce(
         (score, criterion) => score + scoreCriterion(movie, criterion),
-        0,
+        0
       );
     };
 
     filtered = [...filtered].sort((a, b) => scoreFor(b) - scoreFor(a));
 
+    // Svarbu: jei pasirinktas konkretus kriterijus, negrįžtam prie random filmų
     if (filtered.length === 0) {
-      filtered = [...movies]
-        .sort((a, b) => b.rating - a.rating)
-        .slice(0, 4);
-    }
+  let fallback = [...movies];
+
+  if (extraCriteria.duration === 'trumpas') {
+    fallback = fallback.filter(movie => movie.duration < 120);
+  }
+
+  if (extraCriteria.duration === 'ilgas') {
+    fallback = fallback.filter(movie => movie.duration > 150);
+  }
+
+  if (extraCriteria.duration === 'apie2val') {
+    fallback = fallback.filter(movie =>
+      movie.duration >= 105 && movie.duration <= 135
+    );
+  }
+
+  if (extraCriteria.date === 'naujas') {
+    fallback = fallback.filter(movie =>
+      new Date(movie.releaseDate).getFullYear() > 2010
+    );
+  }
+
+  if (extraCriteria.date === 'klasika') {
+    fallback = fallback.filter(movie =>
+      new Date(movie.releaseDate).getFullYear() < 2000
+    );
+  }
+
+  return fallback
+    .sort((a, b) => b.imdbRating - a.imdbRating)
+    .slice(0, 6);
+}
 
     return filtered.slice(0, 6);
   };
@@ -392,15 +419,18 @@ export default function Recommendation() {
 
         <div className="slider-section">
           <h3>2. Oro sąlygos</h3>
+
           {liveWeather && (
             <p className="live-weather-banner">
               📍 {liveWeather.city}: {liveWeather.temp}°C, {liveWeather.description}
               {' '}— pasirinkimas atnaujintas pagal realius orus.
             </p>
           )}
+
           {liveWeatherError && (
             <p className="live-weather-error">{liveWeatherError}</p>
           )}
+
           <div className="mood-grid">
             {weatherOptions.map(w => (
               <button
@@ -472,10 +502,12 @@ export default function Recommendation() {
                     if (prev.includes(p.value)) {
                       return prev.filter(v => v !== p.value);
                     }
-                    // "Neturiu" is exclusive — picking it clears other pets.
+
                     if (p.value === 'neturiu') return ['neturiu'];
+
                     return [...prev.filter(v => v !== 'neturiu'), p.value];
                   });
+
                   setShowResults(false);
                 }}
               >
@@ -501,6 +533,7 @@ export default function Recommendation() {
                           ...prev,
                           [group.key]: prev[group.key] === c.value ? '' : c.value,
                         }));
+
                         setShowResults(false);
                       }}
                     >
@@ -570,6 +603,12 @@ export default function Recommendation() {
               <MovieCard key={movie.id} movie={movie} />
             ))}
           </div>
+        </div>
+      )}
+
+      {showResults && recommendations.length === 0 && (
+        <div className="no-results">
+          <p>Pagal pasirinktus kriterijus filmų nerasta.</p>
         </div>
       )}
     </div>

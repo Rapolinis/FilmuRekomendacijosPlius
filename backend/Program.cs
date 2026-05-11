@@ -13,13 +13,17 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod());
 });
 
-// Register MySQL connection (transient so each request gets a fresh connection)
 builder.Services.AddTransient<MySqlConnection>(_ =>
     new MySqlConnection(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
+app.UseHttpsRedirection();
+
 app.UseCors("AllowAll");
+
+app.UseAuthorization();
+
 app.MapControllers();
 
 app.Run();
