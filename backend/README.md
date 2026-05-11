@@ -1,36 +1,61 @@
 # Filmų Rekomendacijos +
 
-## Paleidimas po `git pull`
+Filmų rekomendavimo sistema su React, ASP.NET Core ir MySQL.
 
-### 1. Įsidiegti
+---
 
-Reikia turėti:
+# Reikalavimai
+
+Prieš paleidžiant projektą reikia turėti įdiegtus:
 
 - Node.js
 - .NET SDK 9
 - MySQL Server
 - MySQL Workbench
-
+Kuriantis workbencha nepamirskit savo passwordo
 ---
+
+# Projekto paleidimas
+
+## 1. Klonuoti projektą
+
+git clone https://github.com/Rapolinis/FilmuRekomendacijosPlius
+
 
 ## 2. Sukurti duomenų bazę
 
-Atsidarykite MySQL Workbench ir paleiskite SQL failą:
+Atidarykite MySQL Workbench.
 
-```text
+Pasirinkite:
+
+File → Open SQL Script
+
+Atidarykite failą:
+
 backend/schema.sql
 
-Turi atsirasti duomenų bazė:
+Nukopijuokit visą failą į Workbencho query scriptą.
+Paleiskite visą scriptą paspaudę:
 
-filmudb
-3. Susikurti backend config failą
+⚡ Execute
 
-Backend aplanke sukurkite failą:
+Bus automatiškai:
+
+- sukurta `filmudb`
+- sukurtos lentelės
+- įkelti visi duomenys
+
+---
+
+## 3. Backend konfiguracija
+
+Atidarykite failą:
 
 backend/appsettings.Development.json
 
-Į jį įklijuokite:
+Pagal poreikį įrašykite savo MySQL slaptažodį:
 
+```json
 {
   "Logging": {
     "LogLevel": {
@@ -38,17 +63,13 @@ backend/appsettings.Development.json
       "Microsoft.AspNetCore": "Warning"
     }
   },
+
   "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Database=filmudb;User ID=root;Password=JUSU_MYSQL_SLAPTAZODIS;"
+    "DefaultConnection": "Server=localhost;Database=filmudb;User=root;Password=JUSU_PASSWORD;"
   }
 }
 
-JUSU_MYSQL_SLAPTAZODIS pakeiskite į savo MySQL root slaptažodį.
-
-Jeigu MySQL neturi slaptažodžio:
-
-"DefaultConnection": "Server=localhost;Database=filmudb;User ID=root;Password=;"
-4. Paleisti backend
+## 4. Paleisti backend
 
 Terminale:
 
@@ -60,49 +81,21 @@ Backend turi pasileisti ant:
 
 http://localhost:5075
 
-Patikrinimas naršyklėje:
+---
 
-http://localhost:5075/api/movies
+## 5. Paleisti frontend
 
-Jeigu matote JSON filmų sąrašą — backend veikia.
-
-5. Paleisti frontend
-
-Kitame terminale iš projekto root folderio:
+Naujame terminale:
 
 npm install
 npm run dev
 
-Frontend veiks ant Vite adreso, pvz.:
 
+Jeigu neleidzia instaliuoti:
+npm install vite --save-dev
+ir tada vel:
+npm install
+
+Frontend adresas:
+turite matyti
 http://localhost:5173
-Projekto struktūra
-backend/
-  Controllers/
-  Models/
-  Program.cs
-  appsettings.json
-  appsettings.Development.json   <- susikurti patiems, nepushinti
-  schema.sql
-
-src/
-  components/
-  context/
-  pages/
-Svarbu
-
-appsettings.Development.json nėra pushinamas į Git, nes ten yra asmeninis MySQL slaptažodis.
-
-Jeigu duomenys nerodomi:
-
-Patikrinkite ar veikia MySQL.
-Patikrinkite ar sukurta filmudb.
-Patikrinkite ar teisingas slaptažodis appsettings.Development.json.
-
-Patikrinkite ar backend veikia:
-
-http://localhost:5075/api/movies
-
-Patikrinkite ar frontend naudoja:
-
-http://localhost:5075
