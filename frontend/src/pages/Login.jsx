@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useData } from '../context/DataContext';
-import { sha256 } from '../utils/hash';
 import './Auth.css';
+
+const API_BASE = 'http://localhost:5075';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+
   const { login } = useAuth();
-  const { users } = useData();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -22,33 +22,47 @@ export default function Login() {
       return;
     }
 
-    const hashedPassword = await sha256(password);
-    const user = users.find(u => u.email === email && u.password === hashedPassword);
+    try {
+      const res = await fetch(`${API_BASE}/api/users/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email.trim(),
+          password,
+        }),
+      });
 
-    if (!user) {
-      setError('Neteisingas el. paštas arba slaptažodis.');
-      return;
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || 'Neteisingas el. paštas arba slaptažodis.');
+        return;
+      }
+
+      const user = data.user || data;
+
+      const loggedInUser = {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar || '',
+        blocked: user.blocked || false,
+      };
+
+      login(loggedInUser);
+
+      navigate('/movies', { replace: true });
+    } catch (err) {
+      console.error(err);
+      setError('Nepavyko prisijungti. Patikrinkite ar veikia backend.');
     }
-
-    if (user.blocked) {
-      setError(`Jūsų paskyra užblokuota. Priežastis: ${user.blockedReason || 'Nenurodyta'}`);
-      return;
-    }
-
-    login({
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      role: user.role,
-      avatar: user.avatar
-    });
-    navigate('/movies');
   };
 
   return (
     <div className="auth-page">
-
-      {/* Left Column: Cinematic Visual */}
       <section className="auth-visual">
         <div className="auth-visual__bg">
           <img
@@ -59,7 +73,7 @@ export default function Login() {
         </div>
 
         <div className="auth-visual__content">
-                  <div className="auth-visual__logo">🎬Filmų rekomendacijos +</div>
+          <div className="auth-visual__logo">🎬Filmų rekomendacijos +</div>
 
           <div>
             <h1 className="auth-visual__headline">
@@ -86,10 +100,8 @@ export default function Login() {
         </div>
       </section>
 
-      {/* Right Column: Login Form */}
       <section className="auth-card">
         <div className="auth-card__inner">
-
           <div className="auth-header">
             <h1>Sveiki sugrįžę</h1>
             <p>Prisijunkite prie savo paskyros ir tęskite kelionę.</p>
@@ -149,7 +161,6 @@ export default function Login() {
           </div>
         </footer>
       </section>
-
     </div>
   );
 }
