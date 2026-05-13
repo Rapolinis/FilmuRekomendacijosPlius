@@ -153,13 +153,13 @@ export default function Recommendation() {
   ];
 
   const petOptions = [
-    { value: 'suo', label: 'Šuo 🐶', genres: ['Nuotykių', 'Komedija'] },
-    { value: 'kate', label: 'Katė 🐱', genres: ['Drama', 'Trileris'] },
-    { value: 'arklys', label: 'Arklys 🐴', genres: ['Nuotykių', 'Drama'] },
-    { value: 'smauglys', label: 'Smauglys 🐍', genres: ['Trileris', 'Siaubo'] },
-    { value: 'juruKiaulyte', label: 'Jūrų kiaulytė 🐹', genres: ['Animacinis', 'Komedija'] },
-    { value: 'neturiu', label: 'Neturiu augintinio 🚫', genres: [] },
-  ];
+  { value: 'suo', label: 'Šuo', image: '/dog.jpg', genres: ['Nuotykių', 'Komedija'] },
+  { value: 'kate', label: 'Katė', image: '/cat.jpg', genres: ['Drama', 'Trileris'] },
+  { value: 'arklys', label: 'Arklys', image: '/horse.jpg', genres: ['Nuotykių', 'Drama'] },
+  { value: 'smauglys', label: 'Smauglys', image: '/boa.jpg', genres: ['Trileris', 'Siaubo'] },
+  { value: 'juruKiaulyte', label: 'Jūrų kiaulytė', image: '/guineapig.jpg', genres: ['Animacinis', 'Komedija'] },
+  { value: 'neturiu', label: 'Neturiu augintinio', image: null, genres: [] },
+];
 
   const extraCriteriaGroups = [
     {
@@ -511,7 +511,10 @@ export default function Recommendation() {
                   setShowResults(false);
                 }}
               >
-                {p.label}
+                {p.image && (
+                <img src={p.image} alt={p.label} style={{ width: 100, height: 100, objectFit: 'cover', borderRadius: '8px', marginBottom: '6px' }} />
+                )}
+                <span>{p.label}</span>
               </button>
             ))}
           </div>
