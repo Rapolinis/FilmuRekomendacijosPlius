@@ -153,13 +153,13 @@ export default function Recommendation() {
   ];
 
   const petOptions = [
-  { value: 'suo', label: 'Šuo', image: '/dog.jpg', genres: ['Nuotykių', 'Komedija'] },
-  { value: 'kate', label: 'Katė', image: '/cat.jpg', genres: ['Drama', 'Trileris'] },
-  { value: 'arklys', label: 'Arklys', image: '/horse.jpg', genres: ['Nuotykių', 'Drama'] },
-  { value: 'smauglys', label: 'Smauglys', image: '/boa.jpg', genres: ['Trileris', 'Siaubo'] },
-  { value: 'juruKiaulyte', label: 'Jūrų kiaulytė', image: '/guineapig.jpg', genres: ['Animacinis', 'Komedija'] },
-  { value: 'neturiu', label: 'Neturiu augintinio', image: null, genres: [] },
-];
+    { value: 'suo', label: 'Šuo', image: '/dog.jpg', genres: ['Nuotykių', 'Komedija'] },
+    { value: 'kate', label: 'Katė', image: '/cat.jpg', genres: ['Drama', 'Trileris'] },
+    { value: 'arklys', label: 'Arklys', image: '/horse.jpg', genres: ['Nuotykių', 'Drama'] },
+    { value: 'smauglys', label: 'Smauglys', image: '/boa.jpg', genres: ['Trileris', 'Siaubo'] },
+    { value: 'juruKiaulyte', label: 'Jūrų kiaulytė', image: '/guineapig.jpg', genres: ['Animacinis', 'Komedija'] },
+    { value: 'neturiu', label: 'Neturiu augintinio', image: null, genres: [] },
+  ];
 
   const extraCriteriaGroups = [
     {
@@ -267,7 +267,6 @@ export default function Recommendation() {
       }
     }
 
-    // Tikri filtrai pagal papildomus kriterijus
     if (extraCriteria.duration === 'trumpas') {
       filtered = filtered.filter(movie => movie.duration < 120);
     }
@@ -332,40 +331,39 @@ export default function Recommendation() {
 
     filtered = [...filtered].sort((a, b) => scoreFor(b) - scoreFor(a));
 
-    // Svarbu: jei pasirinktas konkretus kriterijus, negrįžtam prie random filmų
     if (filtered.length === 0) {
-  let fallback = [...movies];
+      let fallback = [...movies];
 
-  if (extraCriteria.duration === 'trumpas') {
-    fallback = fallback.filter(movie => movie.duration < 120);
-  }
+      if (extraCriteria.duration === 'trumpas') {
+        fallback = fallback.filter(movie => movie.duration < 120);
+      }
 
-  if (extraCriteria.duration === 'ilgas') {
-    fallback = fallback.filter(movie => movie.duration > 150);
-  }
+      if (extraCriteria.duration === 'ilgas') {
+        fallback = fallback.filter(movie => movie.duration > 150);
+      }
 
-  if (extraCriteria.duration === 'apie2val') {
-    fallback = fallback.filter(movie =>
-      movie.duration >= 105 && movie.duration <= 135
-    );
-  }
+      if (extraCriteria.duration === 'apie2val') {
+        fallback = fallback.filter(movie =>
+          movie.duration >= 105 && movie.duration <= 135
+        );
+      }
 
-  if (extraCriteria.date === 'naujas') {
-    fallback = fallback.filter(movie =>
-      new Date(movie.releaseDate).getFullYear() > 2010
-    );
-  }
+      if (extraCriteria.date === 'naujas') {
+        fallback = fallback.filter(movie =>
+          new Date(movie.releaseDate).getFullYear() > 2010
+        );
+      }
 
-  if (extraCriteria.date === 'klasika') {
-    fallback = fallback.filter(movie =>
-      new Date(movie.releaseDate).getFullYear() < 2000
-    );
-  }
+      if (extraCriteria.date === 'klasika') {
+        fallback = fallback.filter(movie =>
+          new Date(movie.releaseDate).getFullYear() < 2000
+        );
+      }
 
-  return fallback
-    .sort((a, b) => b.imdbRating - a.imdbRating)
-    .slice(0, 6);
-}
+      return fallback
+        .sort((a, b) => b.imdbRating - a.imdbRating)
+        .slice(0, 6);
+    }
 
     return filtered.slice(0, 6);
   };
@@ -449,7 +447,17 @@ export default function Recommendation() {
 
         <div className="slider-section">
           <h3>3. Batų dydis</h3>
+
           <div className="shoe-slider">
+            <div
+              className="shoe-value-floating"
+              style={{
+                left: `${((shoeSize - 35) / (48 - 35)) * 100}%`,
+              }}
+            >
+              {shoeSize}
+            </div>
+
             <input
               type="range"
               min="35"
@@ -461,8 +469,6 @@ export default function Recommendation() {
               }}
               className="range-slider"
             />
-
-            <span className="shoe-value">{shoeSize}</span>
 
             <p className="slider-hint">
               {shoeSize % 2 === 0
@@ -512,7 +518,17 @@ export default function Recommendation() {
                 }}
               >
                 {p.image && (
-                <img src={p.image} alt={p.label} style={{ width: 100, height: 100, objectFit: 'cover', borderRadius: '8px', marginBottom: '6px' }} />
+                  <img
+                    src={p.image}
+                    alt={p.label}
+                    style={{
+                      width: 100,
+                      height: 100,
+                      objectFit: 'cover',
+                      borderRadius: '8px',
+                      marginBottom: '6px',
+                    }}
+                  />
                 )}
                 <span>{p.label}</span>
               </button>
