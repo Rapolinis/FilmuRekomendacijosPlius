@@ -97,7 +97,7 @@
 .shoe-slider {
   position: relative;
   width: 100%;
-  padding-top: 58px;
+  padding-top: 62px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -119,6 +119,7 @@
   box-shadow: 0 4px 14px rgba(58, 121, 166, 0.35);
   line-height: 1;
   z-index: 2;
+  transition: left 0.05s;
 }
 
 .shoe-value-floating::after {

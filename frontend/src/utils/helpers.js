@@ -11,15 +11,15 @@ export function getMoonPhase() {
   let newMoons = daysSinceNew / 29.53059;
   let phase = (newMoons - Math.floor(newMoons));
 
-  if (phase < 0.0625) return { name: 'Jaunatis', emoji: '🌑', value: phase };
-  if (phase < 0.1875) return { name: 'Jaunas mėnulis', emoji: '🌒', value: phase };
-  if (phase < 0.3125) return { name: 'Pirmas ketvirtis', emoji: '🌓', value: phase };
-  if (phase < 0.4375) return { name: 'Priešpilnis', emoji: '🌔', value: phase };
-  if (phase < 0.5625) return { name: 'Pilnatis', emoji: '🌕', value: phase };
-  if (phase < 0.6875) return { name: 'Nykstantis', emoji: '🌖', value: phase };
-  if (phase < 0.8125) return { name: 'Paskutinis ketvirtis', emoji: '🌗', value: phase };
-  if (phase < 0.9375) return { name: 'Senasis mėnulis', emoji: '🌘', value: phase };
-  return { name: 'Jaunatis', emoji: '🌑', value: phase };
+  if (phase < 0.0625) return { name: 'new moon', emoji: '🌑', value: phase };
+  if (phase < 0.1875) return { name: 'waxing crescent', emoji: '🌒', value: phase };
+  if (phase < 0.3125) return { name: 'first quarter', emoji: '🌓', value: phase };
+  if (phase < 0.4375) return { name: 'waxing gibbous', emoji: '🌔', value: phase };
+  if (phase < 0.5625) return { name: 'full moon', emoji: '🌕', value: phase };
+  if (phase < 0.6875) return { name: 'waning gibbous', emoji: '🌖', value: phase };
+  if (phase < 0.8125) return { name: 'last quarter', emoji: '🌗', value: phase };
+  if (phase < 0.9375) return { name: 'waning crescent', emoji: '🌘', value: phase };
+  return { name: 'new moon', emoji: '🌑', value: phase };
 }
 
 export function getWeatherMood() {

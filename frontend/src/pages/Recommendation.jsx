@@ -15,8 +15,8 @@ const LOADING_STEPS = [
 export default function Recommendation() {
   const { movies } = useData();
 
-  const [mood, setMood] = useState('');
-  const [weather, setWeather] = useState('');
+  const [moods_selected, setMoodsSelected] = useState([]);
+  const [weather, setWeather] = useState([]);
   const [liveWeather, setLiveWeather] = useState(null);
   const [liveWeatherError, setLiveWeatherError] = useState(null);
   const [shoeSize, setShoeSize] = useState(42);
@@ -58,7 +58,7 @@ export default function Recommendation() {
           city: data?.name ?? 'Vilnius',
         });
 
-        setWeather(mapped);
+        setWeather([mapped]);
       })
       .catch(() => {
         if (cancelled) return;
@@ -94,20 +94,24 @@ export default function Recommendation() {
 
   const normalizeMoonPhase = (name) => {
     const map = {
-      'New Moon': 'Jaunatis',
-      'Waxing Crescent': 'Jaunėjantis pjautuvas',
-      'First Quarter': 'Priešpilnis',
-      'Waxing Gibbous': 'Pilnėjantis mėnulis',
-      'Full Moon': 'Pilnatis',
-      'Waning Gibbous': 'Delčiantis mėnulis',
-      'Last Quarter': 'Delčia',
-      'Waning Crescent': 'Senstantis pjautuvas',
+      'new moon': 'Jaunatis',
+      'waxing crescent': 'Jaunėjantis pjautuvas',
+      'first quarter': 'Priešpilnis',
+      'waxing gibbous': 'Pilnėjantis mėnulis',
+      'full moon': 'Pilnatis',
+      'waning gibbous': 'Delčiantis mėnulis',
+      'last quarter': 'Delčia',
+      'waning crescent': 'Senstantis pjautuvas',
     };
 
-    return map[name] || name;
+    return map[name?.trim().toLowerCase()] || name;
   };
 
   const currentMoon = normalizeMoonPhase(moonPhase.name);
+
+  // DEBUG - ištrink kai veiks
+  console.log('moonPhase raw:', moonPhase);
+  console.log('currentMoon normalized:', currentMoon);
 
   const moonPhases = [
     { name: 'Jaunatis', emoji: '🌑' },
@@ -123,10 +127,15 @@ export default function Recommendation() {
   const moods = [
     { value: 'laimingas', label: 'Laimingas 😊', genres: ['Komedija', 'Nuotykių', 'Animacinis'] },
     { value: 'liudnas', label: 'Liūdnas 😢', genres: ['Drama', 'Romantinis'] },
-    { value: 'issigandes', label: 'Noriu adrenalino 😱', genres: ['Siaubo', 'Trileris'] },
+    { value: 'piktas', label: 'Piktas 😡', genres: ['Veiksmo', 'Trileris'] },
     { value: 'nuobodu', label: 'Nuobodu 😴', genres: ['Veiksmo', 'Mokslinė fantastika'] },
     { value: 'romantiskas', label: 'Romantiškas ❤️', genres: ['Romantinis', 'Drama', 'Komedija'] },
     { value: 'smalsus', label: 'Smalsus 🤔', genres: ['Dokumentinis', 'Mokslinė fantastika', 'Kriminalinis'] },
+    { value: 'nostalgiskas', label: 'Nostalgiškas 🥹', genres: ['Drama', 'Animacinis', 'Romantinis'] },
+    { value: 'juoktis', label: 'Noriu pasijuokti 😂', genres: ['Komedija', 'Animacinis'] },
+    { value: 'motyvacija', label: 'Reikia motyvacijos 💪', genres: ['Dokumentinis', 'Nuotykių', 'Veiksmo'] },
+    { value: 'pavargęs', label: 'Pavargęs 😪', genres: ['Animacinis', 'Komedija', 'Drama'] },
+    { value: 'itemptas', label: 'Įsitempęs 😬', genres: ['Trileris', 'Drama', 'Siaubo'] },
   ];
 
   const weatherOptions = [
@@ -189,16 +198,21 @@ export default function Recommendation() {
   ];
 
   const getRecommendations = () => {
-    if (!mood) return [];
+    if (!moods_selected.length) return [];
 
-    const selectedMood = moods.find(m => m.value === mood);
-    if (!selectedMood) return [];
+    const selectedMoodGenres = [...new Set(
+      moods_selected
+        .map(v => moods.find(m => m.value === v))
+        .filter(Boolean)
+        .flatMap(m => m.genres)
+    )];
 
     let filtered = movies.filter(movie =>
-      (movie.genre || []).some(genre => selectedMood.genres.includes(genre))
+      (movie.genre || []).some(genre => selectedMoodGenres.includes(genre))
     );
 
-    const selectedWeather = weatherOptions.find(w => w.value === weather);
+    // Weather: use first selected weather for sorting influence
+    const selectedWeather = weather.length > 0 ? weatherOptions.find(w => w.value === weather[0]) : null;
 
     if (selectedWeather) {
       if (selectedWeather.influence === 'short') {
@@ -403,9 +417,11 @@ export default function Recommendation() {
             {moods.map(m => (
               <button
                 key={m.value}
-                className={`mood-btn ${mood === m.value ? 'active' : ''}`}
+                className={`mood-btn ${moods_selected.includes(m.value) ? 'active' : ''}`}
                 onClick={() => {
-                  setMood(m.value);
+                  setMoodsSelected(prev =>
+                    prev.includes(m.value) ? prev.filter(v => v !== m.value) : [...prev, m.value]
+                  );
                   setShowResults(false);
                 }}
               >
@@ -433,9 +449,11 @@ export default function Recommendation() {
             {weatherOptions.map(w => (
               <button
                 key={w.value}
-                className={`mood-btn ${weather === w.value ? 'active' : ''}`}
+                className={`mood-btn ${weather.includes(w.value) ? 'active' : ''}`}
                 onClick={() => {
-                  setWeather(w.value);
+                  setWeather(prev =>
+                    prev.includes(w.value) ? prev.filter(v => v !== w.value) : [...prev, w.value]
+                  );
                   setShowResults(false);
                 }}
               >
@@ -452,7 +470,7 @@ export default function Recommendation() {
             <div
               className="shoe-value-floating"
               style={{
-                left: `${((shoeSize - 35) / (48 - 35)) * 100}%`,
+                left: `calc(${((shoeSize - 35) / (48 - 35)) * 100}% + ${12 - ((shoeSize - 35) / (48 - 35)) * 24}px)`,
               }}
             >
               {shoeSize}
@@ -497,7 +515,7 @@ export default function Recommendation() {
         </div>
 
         <div className="slider-section">
-          <h3>5. Naminis augintinis (galima pasirinkti kelis)</h3>
+          <h3>5. Naminis augintinis</h3>
           <div className="mood-grid">
             {petOptions.map(p => (
               <button
@@ -566,7 +584,7 @@ export default function Recommendation() {
         </div>
       </div>
 
-      {mood && loadingStep === null && (
+      {moods_selected.length > 0 && loadingStep === null && (
         <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
           <button
             onClick={startRecommendation}
@@ -609,8 +627,8 @@ export default function Recommendation() {
           <h2>Jūsų rekomendacijos</h2>
 
           <p className="rec-note">
-            Atsižvelgiant į nuotaiką, {moonPhase.emoji} mėnulio fazę ({currentMoon}),
-            {weather && ` ${weatherOptions.find(w => w.value === weather)?.label || ''} orus,`}
+            Atsižvelgiant į nuotaiką ({moods_selected.map(v => moods.find(m => m.value === v)?.label).filter(Boolean).join(', ')}), {moonPhase.emoji} mėnulio fazę ({currentMoon}),
+            {weather.length > 0 && ` ${weather.map(v => weatherOptions.find(w => w.value === v)?.label).filter(Boolean).join(', ')} orus,`}
             {` batų dydį ${shoeSize}`}
             {zodiac && `, horoskopą ${zodiacOptions.find(z => z.value === zodiac)?.label}`}
             {pets.length > 0 && `, augintinius ${pets.map(v => petOptions.find(p => p.value === v)?.label).filter(Boolean).join(', ')}`}
