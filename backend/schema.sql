@@ -278,9 +278,9 @@ INSERT INTO comments (movie_id, user_id, text, created_at) VALUES
 (30,4,'Trumpas, gražus ir nostalgiškas pasirinkimas.','2026-04-15');
 
 INSERT INTO watch_parties (id, movie_id, date, time, max_participants, created_by, description) VALUES
-(1,1,'2026-04-20','19:00:00',50,2,'Bendra filmo „Tarp žvaigždžių“ peržiūra su diskusija po filmo!'),
-(2,3,'2026-04-25','20:00:00',50,2,'Christopherio Nolano maratonas – pradedame nuo filmo „Tamsos riteris“!'),
-(3,6,'2026-05-01','18:30:00',50,2,'Bendra filmo „Pradžia“ peržiūra – ar jūs vis dar sapne?');
+(1,1,'2026-06-20','19:00:00',50,2,'Bendra filmo „Tarp žvaigždžių“ peržiūra su diskusija po filmo!'),
+(2,3,'2026-06-25','20:00:00',50,2,'Christopherio Nolano maratonas – pradedame nuo filmo „Tamsos riteris“!'),
+(3,6,'2026-06-01','18:30:00',50,2,'Bendra filmo „Pradžia“ peržiūra – ar jūs vis dar sapne?');
 
 INSERT INTO watch_party_participants (watch_party_id, user_id) VALUES
 (1,3),(1,4),(2,3);
