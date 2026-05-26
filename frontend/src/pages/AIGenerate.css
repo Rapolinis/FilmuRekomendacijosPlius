@@ -274,3 +274,27 @@
 @keyframes ai-step-blink {
   to { opacity: 0.55; }
 }
+
+/* ── Sugeneruoto filmo video grotuvas ──────────────────────────────────── */
+.generated-video-wrapper {
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+  border: 2px solid #3A79A6;
+  margin-bottom: 1rem;
+}
+
+.generated-video {
+  width: 100%;
+  display: block;
+  max-height: 520px;
+  object-fit: contain;
+  background: #000;
+}
+
+.generated-video-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.75rem;
+}

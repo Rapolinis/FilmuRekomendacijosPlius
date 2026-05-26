@@ -223,35 +223,21 @@ export default function AIGenerate() {
       {generatedFilm && !loading && (
         <div className="generated-result">
           <h2>🎬 Sugeneruotas filmas</h2>
-          <div className="generated-card">
-            <div className="generated-poster">
-              <div className="ai-poster-placeholder">
-                <span>🤖</span>
-                <p>DI</p>
-                <small>{generatedFilm.year}</small>
-              </div>
-            </div>
-            <div className="generated-info">
-              <h3>{generatedFilm.title}</h3>
-              <div className="detail-tags">
-                {generatedFilm.genre.map(g => (
-                  <span key={g} className="tag">{g}</span>
-                ))}
-                <span className="tag" style={{ background: '#e9d8fd', color: '#6b46c1' }}>
-                  {generatedFilm.tone}
-                </span>
-              </div>
-              <p className="generated-desc">{generatedFilm.description}</p>
-              <div className="generated-meta">
-                <span>🎬 {generatedFilm.director}</span>
-                <span>⏱ {generatedFilm.duration} min</span>
-                <span>⭐ {generatedFilm.rating}/5</span>
-                <span>📅 {generatedFilm.year}</span>
-              </div>
-              <button onClick={generateFilm} className="btn-primary" style={{ width: 'auto', marginTop: '1rem', padding: '0.5rem 1.2rem', fontSize: '0.9rem' }}>
-                🔄 Generuoti iš naujo
-              </button>
-            </div>
+          <div className="generated-video-wrapper">
+            <video
+              key={generatedFilm.title}
+              className="generated-video"
+              controls
+              autoPlay
+            >
+              <source src="/ai_generation.mp4" type="video/mp4" />
+              Jūsų naršyklė nepalaiko video atkūrimo.
+            </video>
+          </div>
+          <div className="generated-video-actions">
+            <button onClick={generateFilm} className="btn-primary" style={{ width: 'auto', padding: '0.6rem 1.4rem', fontSize: '0.95rem' }}>
+              🔄 Generuoti iš naujo
+            </button>
           </div>
         </div>
       )}
